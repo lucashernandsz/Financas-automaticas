@@ -4,4 +4,6 @@
     <string name = "password">Senha</string>
     <string name = "email">Email</string>
     <string name="create_account">Criar conta</string>
+    <string name="transactions_title">Transações\n\n</string>
+    <string name="transaction_page_title">Transações\n</string>
 </resources>
