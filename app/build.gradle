@@ -56,6 +56,9 @@ dependencies {
     debugImplementation libs.androidx.ui.tooling
     debugImplementation libs.androidx.ui.test.manifest
 
+    //Icons
+    implementation "androidx.compose.material:material-icons-extended"
+
     //Ksp
     implementation 'com.google.devtools.ksp:symbol-processing-api:2.1.0-1.0.29'
 

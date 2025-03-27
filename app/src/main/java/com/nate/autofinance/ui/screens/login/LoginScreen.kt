@@ -1,4 +1,5 @@
 package com.nate.autofinance.ui.screens.login
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CheckboxDefaults.colors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +29,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nate.autofinance.R
+import com.nate.autofinance.ui.components.AppButton
+import com.nate.autofinance.ui.components.AppLargeCenteredTopBar
+import com.nate.autofinance.ui.theme.AutofinanceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -39,22 +53,39 @@ fun LoginScreenVisual() {
     var errorMessage by remember { mutableStateOf("") }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Login") }) }
+        topBar = {
+            AppLargeCenteredTopBar(stringResource(id = R.string.welcome_message))
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InputFields(
+            Text(
+                text = "Estamos comprometidos em te ajudar a organizar suas finanças. Vamos começar?\n",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
+            LoginFields(
                 email = email,
                 onEmailChange = { email = it },
                 password = password,
                 onPasswordChange = { password = it },
                 errorMessage = errorMessage
+            )
+            AppButton(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    disabledContentColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                text = "Entrar com o Google",
             )
             Button(
                 onClick = {
@@ -72,6 +103,7 @@ fun LoginScreenVisual() {
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
                 enabled = !isLoading
             ) {
                 if (isLoading) {
@@ -83,52 +115,10 @@ fun LoginScreenVisual() {
                     Text("Entrar")
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.weight(1f))
             TextButton(onClick = { /* Navegar para tela de cadastro */ }) {
-                Text("Cadastre-se")
+                Text("Não possui uma conta? Crie aqui")
             }
         }
     }
-}
-
-
-@Composable
-fun InputFields(
-    email: String,
-    onEmailChange: (String) -> Unit,
-    password: String,
-    onPasswordChange: (String) -> Unit,
-    errorMessage: String
-) {
-    TextField(
-        value = email,
-        onValueChange = onEmailChange,
-        label = { Text("Email") },
-        modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(modifier = Modifier.height(8.dp))
-    TextField(
-        value = password,
-        onValueChange = onPasswordChange,
-        label = { Text("Senha") },
-        modifier = Modifier.fillMaxWidth(),
-        visualTransformation = PasswordVisualTransformation()
-    )
-    Spacer(modifier = Modifier.height(16.dp))
-    if (errorMessage.isNotEmpty()) {
-        Text(
-            text = errorMessage,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.padding(8.dp)
-        )
-    }
-}
-
-
-fun render(){
-
-}
-
-fun handleUserInput(){
-
 }
