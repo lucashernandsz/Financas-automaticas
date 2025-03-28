@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "621270896441",
+    "project_id": "magic-finance-ab2b5",
+    "storage_bucket": "magic-finance-ab2b5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:621270896441:android:504fbe3537d70e7917a2e8",
+        "android_client_info": {
+          "package_name": "com.nate.autofinance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0jY3gEMBwv3lXn44iW782vt41DAPv3jw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
