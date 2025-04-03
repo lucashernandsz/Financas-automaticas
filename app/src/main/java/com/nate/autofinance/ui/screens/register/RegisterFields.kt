@@ -42,13 +42,15 @@ fun RegisterFields(
         AppPasswordField(
             password = password,
             onPasswordChange = onPasswordChange,
-            placeholderText = "Senha"
+            placeholderText = "Senha",
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         AppPasswordField(
             password = confirmPassword,
             onPasswordChange = onConfirmPasswordChange,
-            placeholderText = "Confirmar Senha"
+            placeholderText = "Confirmar Senha",
+            modifier = Modifier.fillMaxWidth()
         )
         if (errorMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))

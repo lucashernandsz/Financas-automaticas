@@ -10,5 +10,9 @@ data class Transaction(
     val date: Date,
     val amount: Double,
     val description: String,
-    val category: String
+    val category: String,
+    val userId: String? = null,
+    val financialPeriodId: Int? = null,
+    val imported: Boolean = false,
+
 )

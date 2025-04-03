@@ -10,5 +10,5 @@ data class User(
     val email: String,
     val phone: String,
     val password: String,
-    val subscriptionStatus: Boolean
+    val subscriptionStatus: Boolean = false,
 )

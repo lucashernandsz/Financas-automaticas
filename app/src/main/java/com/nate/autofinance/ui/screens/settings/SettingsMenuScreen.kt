@@ -21,10 +21,12 @@ import com.nate.autofinance.ui.components.AppTopBarPageTitle
 fun SettingsMenuScreen(
     onBack: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
-    onNavigateToAccounts: () -> Unit = {},
     onNavigateToAppSettings: () -> Unit = {},
     onNavigateToCategories: () -> Unit = {},
-    onNavigateToNotifications: () -> Unit = {}
+    onNavigateToNotifications: () -> Unit = {},
+    onNavigateToPremium: () -> Unit = {},               // Novo callback para a tela premium
+    onNavigateToNewFinancialPeriod: () -> Unit = {},       // Novo callback para iniciar novo período
+    onNavigateToFinancialPeriods: () -> Unit = {}          // Novo callback para navegar entre períodos
 ) {
     val isPremium = false
 
@@ -33,7 +35,7 @@ fun SettingsMenuScreen(
             AppTopBarPageTitle(
                 text = "Configurações",
                 showBackButton = true,
-                onBackButtonClick = onBack
+                onBackClick = onBack
             )
         }
     ) { padding ->
@@ -53,7 +55,7 @@ fun SettingsMenuScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = { /* TODO: upgrade flow */ },
+                onClick = onNavigateToPremium, // Navega para a tela de assinatura/premium
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                 shape = MaterialTheme.shapes.medium
@@ -63,10 +65,10 @@ fun SettingsMenuScreen(
                 Text("Torne‑se premium", color = Color.White)
             }
 
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(8.dp))
 
             Button(
-                onClick = { /* TODO */ },
+                onClick = onNavigateToNewFinancialPeriod, // Navega para a tela de novo período financeiro
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                 shape = MaterialTheme.shapes.medium
@@ -74,8 +76,10 @@ fun SettingsMenuScreen(
                 Text("Iniciar novo período financeiro", color = Color.White)
             }
 
+            Spacer(Modifier.height(8.dp))
+
             OutlinedButton(
-                onClick = { /* TODO */ },
+                onClick = onNavigateToFinancialPeriods, // Navega para a tela de períodos financeiros
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
             ) {
@@ -115,4 +119,3 @@ fun SettingsMenuScreenPreview() {
         SettingsMenuScreen()
     }
 }
-

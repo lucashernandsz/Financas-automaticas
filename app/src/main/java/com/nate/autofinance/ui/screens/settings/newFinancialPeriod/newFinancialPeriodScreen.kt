@@ -33,7 +33,7 @@ fun StartNewPeriodScreen(
             AppTopBarPageTitle(
                 text = "Iniciar novo período",
                 showBackButton = true,
-                onBackButtonClick = onClose
+                onBackClick = onClose
             )
         }
     ) { padding ->

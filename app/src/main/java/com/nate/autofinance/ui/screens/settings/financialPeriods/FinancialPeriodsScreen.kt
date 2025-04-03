@@ -1,4 +1,4 @@
-package com.nate.autofinance.ui.screens.settings.FinancialPeriods
+package com.nate.autofinance.ui.screens.settings.financialPeriods
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +46,8 @@ fun FinancialPeriodsScreen(
             AppTopBarPageTitle(
                 text = "Períodos financeiros" + if (selected.isNotEmpty()) " selecionados: ${selected.size}" else "",
                 showBackButton = true,
-                onBackButtonClick = onBack
+                onBackClick = onBack,
+
             )
         }
     ) { padding ->

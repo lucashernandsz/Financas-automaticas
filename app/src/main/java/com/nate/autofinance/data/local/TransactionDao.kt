@@ -20,4 +20,9 @@ interface TransactionDao {
 
     @Query("SELECT * FROM `transaction` WHERE id = :id")
     suspend fun getTransactionById(id: Int): Transaction?
+
+    @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :financialPeriodId")
+    suspend fun getTransactionByFinancialPeriodId(financialPeriodId: Int): List<Transaction> {
+        return getTransactionByFinancialPeriodId(financialPeriodId)
+    }
 }

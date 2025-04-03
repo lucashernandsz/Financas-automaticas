@@ -12,5 +12,6 @@ data class FinancialPeriod(
     val initialBalance: Double,
     val finalBalance: Double,
     val totalIncome: Double,
-    val totalExpenses: Double
+    val totalExpenses: Double,
+    val userId: String
 )

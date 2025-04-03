@@ -37,7 +37,7 @@ fun EditTransactionScreen(
             AppTopBarPageTitle(
                 text = "Editar Transação",
                 showBackButton = true,
-                onBackButtonClick = onBack
+                onBackClick = onBack
             )
         }
     ) { innerPadding ->
@@ -105,7 +105,8 @@ fun EditTransactionScreenPreview() {
             date = Date(),
             amount = 123.45,
             description = "Exemplo",
-            category = "Despesa"
+            category = "Despesa",
+            userId = "1"
         )
     )
 }

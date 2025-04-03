@@ -43,7 +43,7 @@ fun AddTransactionScreen(
             AppTopBarPageTitle(
                 text = "Adicionar Transação",
                 showBackButton = true,
-                onBackButtonClick = onBack
+                onBackClick = onBack
             )
         }
     ) { innerPadding ->

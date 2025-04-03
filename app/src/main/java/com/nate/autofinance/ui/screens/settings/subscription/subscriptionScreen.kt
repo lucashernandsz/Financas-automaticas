@@ -43,7 +43,7 @@ fun SubscriptionScreen(
             AppTopBarPageTitle(
                 text = "Subscription",
                 showBackButton = true,
-                onBackButtonClick = onClose
+                onBackClick = onClose
             )
         }
     ) { padding ->

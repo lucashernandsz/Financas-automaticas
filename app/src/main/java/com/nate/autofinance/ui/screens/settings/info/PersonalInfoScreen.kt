@@ -43,7 +43,7 @@ fun PersonalInfoScreen(
             AppTopBarPageTitle(
                 text = "Informações Pessoais",
                 showBackButton = true,
-                onBackButtonClick = onBack
+                onBackClick = onBack
             )
         }
     ) { padding ->

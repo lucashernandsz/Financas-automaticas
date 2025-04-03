@@ -38,7 +38,7 @@ fun AppSettingsScreen(
             AppTopBarPageTitle(
                 text = "Configurações do aplicativo",
                 showBackButton = true,
-                onBackButtonClick = onBack
+                onBackClick = onBack
             )
         }
     ) { padding ->

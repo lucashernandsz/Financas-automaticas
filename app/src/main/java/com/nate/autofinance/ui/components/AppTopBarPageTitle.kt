@@ -17,12 +17,11 @@ import androidx.compose.ui.unit.sp
 fun AppTopBarPageTitle(
     text: String,
     showBackButton: Boolean = false,
-    onBackButtonClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
     showSettingsButton: Boolean = false,
-    onSettingsButtonClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
-        // Removido o padding extra para manter tudo alinhado
         modifier = Modifier,
         title = {
             Text(
@@ -33,7 +32,7 @@ fun AppTopBarPageTitle(
         },
         navigationIcon = {
             if (showBackButton) {
-                IconButton(onClick = onBackButtonClick) {
+                IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Voltar"
@@ -43,7 +42,7 @@ fun AppTopBarPageTitle(
         },
         actions = {
             if (showSettingsButton) {
-                IconButton(onClick = onSettingsButtonClick) {
+                IconButton(onClick = onSettingsClick) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Configurações"
@@ -66,8 +65,8 @@ fun AppTopBarPageTitlePreview() {
     AppTopBarPageTitle(
         text = "Welcome to AutoFinance",
         showBackButton = true,
-        onBackButtonClick = { /* Ação customizada para voltar */ },
+        onBackClick = { /* Ação customizada para voltar */ },
         showSettingsButton = true,
-        onSettingsButtonClick = { /* Ação customizada para configurações */ }
+        onSettingsClick = { /* Ação customizada para configurações */ }
     )
 }
