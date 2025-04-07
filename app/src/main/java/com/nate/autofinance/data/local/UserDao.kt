@@ -8,7 +8,7 @@ import androidx.room.Update
 import com.nate.autofinance.domain.models.User
 
 @Dao
-interface UserDao {
+interface   UserDao {
     @Insert
     suspend fun insert(user: User): Long
 
