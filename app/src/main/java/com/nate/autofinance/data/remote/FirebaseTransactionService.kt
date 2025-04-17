@@ -12,6 +12,7 @@ class FirebaseTransactionService(
 
     // Adiciona uma nova transação na coleção e retorna o ID do documento criado.
     suspend fun addTransaction(transaction: Transaction): String? {
+        // Inclui o syncStatus no mapa (convertido para String)
         val transactionMap = hashMapOf(
             "date" to transaction.date,
             "amount" to transaction.amount,
@@ -19,7 +20,10 @@ class FirebaseTransactionService(
             "category" to transaction.category,
             "userId" to transaction.userId,
             "financialPeriodId" to transaction.financialPeriodId,
-            "imported" to transaction.imported
+            "imported" to transaction.imported,
+            "syncStatus" to transaction.syncStatus.name,
+            "firebaseDocFinancialPeriodId" to transaction.firebaseDocFinancialPeriodId,
+            "firebaseDocUserId" to transaction.firebaseDocUserId,
         )
         val documentRef = transactionsCollection.add(transactionMap).await()
         return documentRef.id

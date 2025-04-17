@@ -1,4 +1,4 @@
-package com.nate.autofinance
+package com.nate.autofinance.repository
 
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.AuthResult
@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 
 class AuthRepositoryTest {
@@ -20,14 +20,14 @@ class AuthRepositoryTest {
     @Before
     fun setUp() {
         // Cria um mock do FirebaseAuth
-        firebaseAuth = mock()
+        firebaseAuth = Mockito.mock()
         authRepository = AuthRepository(firebaseAuth)
     }
 
     @Test
     fun `registerUser returns FirebaseUser on success`() = runBlocking {
-        val fakeUser: FirebaseUser = mock()
-        val fakeAuthResult: AuthResult = mock()
+        val fakeUser: FirebaseUser = Mockito.mock()
+        val fakeAuthResult: AuthResult = Mockito.mock()
 
         val fakeTask = Tasks.forResult(fakeAuthResult)
         whenever(fakeAuthResult.user).thenReturn(fakeUser)
@@ -42,8 +42,8 @@ class AuthRepositoryTest {
 
     @Test
     fun `loginUser returns FirebaseUser on success`() = runBlocking {
-        val fakeUser: FirebaseUser = mock()
-        val fakeAuthResult: AuthResult = mock()
+        val fakeUser: FirebaseUser = Mockito.mock()
+        val fakeAuthResult: AuthResult = Mockito.mock()
 
         val fakeTask = Tasks.forResult(fakeAuthResult)
         whenever(fakeAuthResult.user).thenReturn(fakeUser)

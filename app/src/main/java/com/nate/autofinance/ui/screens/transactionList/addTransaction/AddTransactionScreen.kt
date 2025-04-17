@@ -28,13 +28,14 @@ fun AddTransactionScreen(
     // Estados para os campos
     var amount by remember { mutableStateOf("") }
     var dateText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Ganho") }
+    var selectedCategory by remember { mutableStateOf("Income") }
     var description by remember { mutableStateOf("") }
 
     // Preenche a data com a data atual se não estiver definida
     LaunchedEffect(Unit) {
         if (dateText.isEmpty()) {
-            dateText = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+            dateText = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                .format(Date())
         }
     }
 
@@ -61,7 +62,8 @@ fun AddTransactionScreen(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val categories = listOf("Ganho", "Despesa", "Outros")
+                // Aqui você pode usar Categories.fixedCategories se preferir
+                val categories = listOf("Income", "Food", "Entertainment", "Transportation", "Education", "Health", "Housing", "Other")
                 categories.forEach { category ->
                     val isSelected = selectedCategory == category
                     FilterChip(
@@ -75,42 +77,44 @@ fun AddTransactionScreen(
                     )
                 }
             }
-            // Campo de Valor
+
             AppTextField(
                 value = amount,
                 onValueChange = { amount = it },
                 placeholder = "Valor",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
-            // Campo de Data
+
             AppTextField(
                 value = dateText,
                 onValueChange = { dateText = it },
-                placeholder = "Data (dd/MM/aaaa)"
+                placeholder = "Data (dd/MM/yyyy)"
             )
-            // Seleção de Categoria via chips
 
-            // Campo de Descrição
             AppTextField(
                 value = description,
                 onValueChange = { description = it },
                 placeholder = "Descrição",
                 singleLine = false
             )
+
             Button(
                 onClick = {
                     val amountValue = amount.toDoubleOrNull() ?: 0.0
                     val date = try {
-                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dateText) ?: Date()
-                    } catch (e: Exception) {
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            .parse(dateText)!!
+                    } catch (_: Exception) {
                         Date()
                     }
+
+                    // Apenas os dados de entrada; IDs e sessão são tratados no Use Case
                     val transaction = Transaction(
-                        id = 0,
                         date = date,
                         amount = amountValue,
                         description = description,
-                        category = selectedCategory
+                        category = selectedCategory,
+                        financialPeriodId = 0,
                     )
                     onSave(transaction)
                 },

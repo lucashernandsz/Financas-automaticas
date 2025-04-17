@@ -20,32 +20,44 @@ class TransactionRepository(
 
     /**
      * Insere a transação no banco local e tenta enviá-la para o Firebase.
-     * Caso a sincronização remota falhe, o erro é registrado para tratamento posterior.
+     * Após a inserção remota, atualiza o registro local com o firebaseDocId gerado e o syncStatus.
      */
     suspend fun addTransaction(transaction: Transaction) = withContext(ioDispatcher) {
-        // Persistência local
-        transactionDao.insert(transaction)
+        // 1. Insere a transação localmente e captura o ID gerado pelo Room.
+        val localId = transactionDao.insert(transaction)
 
-        // Sincronização remota com o Firebase
         try {
+            // 2. Envia a transação para o Firebase e captura o firebaseDocId gerado.
             val firebaseDocId = firebaseTransactionService.addTransaction(transaction)
-            Log.i(TAG, "Transação enviada para o Firebase com id: $firebaseDocId")
-            // Se necessário, atualize a transação local com o firebaseDocId.
-            // Exemplo: transaction.firebaseDocId = firebaseDocId
+            // 3. Caso o firebaseDocId não seja nulo, atualiza o objeto local com status SYNCED.
+            if (firebaseDocId != null) {
+                Log.i(TAG, "Transaction sent to Firebase with id: $firebaseDocId")
+                val updatedTransaction = transaction.copy(
+                    id = localId.toInt(),          // Garante que o ID local seja o mesmo
+                    firebaseDocId = firebaseDocId, // Atualiza o campo firebaseDocId
+                    syncStatus = SyncStatus.SYNCED // Marca como sincronizada
+                )
+                transactionDao.update(updatedTransaction)
+            }
         } catch (ex: Exception) {
-            Log.e(TAG, "Falha ao enviar transação para o Firebase", ex)
-            // Marcar a transação para reenvio ou tratar de outra forma
+            Log.e(TAG, "Error sending transaction to Firebase", ex)
+            // Se ocorrer erro, marca a transação local para nova tentativa de sincronização.
+            val updatedTransaction = transaction.copy(
+                id = localId.toInt(),
+                syncStatus = SyncStatus.FAILED
+            )
+            transactionDao.update(updatedTransaction)
         }
     }
 
     /**
-     * Atualiza a transação local e, se disponível, atualiza a transação remota.
-     * Para a atualização remota, é necessário que o modelo possua um identificador do documento Firebase.
+     * Atualiza a transação local e, se o firebaseDocId estiver presente,
+     * atualiza também o registro remoto no Firebase.
      */
     suspend fun updateTransaction(transaction: Transaction) = withContext(ioDispatcher) {
+        // Atualiza primeiro a transação local.
         transactionDao.update(transaction)
         try {
-            // Supondo que Transaction possua o campo firebaseDocId (opcional)
             transaction.firebaseDocId?.let { docId ->
                 val updatedData: Map<String, Any?> = mapOf(
                     "date" to transaction.date,
@@ -54,33 +66,39 @@ class TransactionRepository(
                     "category" to transaction.category,
                     "userId" to transaction.userId,
                     "financialPeriodId" to transaction.financialPeriodId,
-                    "imported" to transaction.imported
+                    "imported" to transaction.imported,
+                    "syncStatus" to transaction.syncStatus.name
                 )
-                firebaseTransactionService.updateTransaction(docId, updatedData)
-                Log.i(TAG, "Transação atualizada no Firebase: $docId")
+                firebaseTransactionService.updateTransaction(docId, updatedData as Map<String, Any>)
+                Log.i(TAG, "Transaction updated in Firebase: $docId")
             }
+            // Se a operação remota tiver sucesso, atualiza o syncStatus para SYNCED localmente.
+            val updatedTransaction = transaction.copy(syncStatus = SyncStatus.SYNCED)
+            transactionDao.update(updatedTransaction)
         } catch (ex: Exception) {
-            Log.e(TAG, "Falha ao atualizar transação no Firebase", ex)
+            Log.e(TAG, "Error updating transaction in Firebase", ex)
+            // Em caso de erro, marca a transação como FAILED.
+            val updatedTransaction = transaction.copy(syncStatus = SyncStatus.FAILED)
+            transactionDao.update(updatedTransaction)
         }
     }
 
     /**
-     * Remove a transação local e tenta removê-la do Firebase.
+     * Remove a transação localmente e tenta removê-la do Firebase.
      */
     suspend fun deleteTransaction(transaction: Transaction) = withContext(ioDispatcher) {
         transactionDao.delete(transaction)
         try {
-            // Supondo que Transaction possua o campo firebaseDocId (opcional)
             transaction.firebaseDocId?.let { docId ->
                 firebaseTransactionService.deleteTransaction(docId)
-                Log.i(TAG, "Transação deletada no Firebase: $docId")
+                Log.i(TAG, "Transaction deleted from Firebase: $docId")
             }
         } catch (ex: Exception) {
-            Log.e(TAG, "Falha ao deletar transação no Firebase", ex)
+            Log.e(TAG, "Error deleting transaction from Firebase", ex)
         }
     }
 
     suspend fun getTransactionsByPeriodId(periodId: Int): List<Transaction> = withContext(ioDispatcher) {
-        transactionDao.getTransactionByFinancialPeriodId(periodId)
+        transactionDao.getTransactionsByFinancialPeriodId(periodId)
     }
 }

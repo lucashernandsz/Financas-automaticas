@@ -50,24 +50,29 @@ class AppDatabaseTest {
         user = User(
             name = "John Doe",
             email = "john@example.com",
-            phone = "1234567890",
-            password = "password"
         )
 
         transaction = Transaction(
             amount = 100.0,
             description = "Test transaction",
             date = Date(),
-            category = "Income"
+            category = "Income",
+            id = TODO(),
+            userId = TODO(),
+            financialPeriodId = TODO(),
+            imported = TODO(),
+            syncStatus = TODO(),
+            firebaseDocFinancialPeriodId = TODO(),
+            firebaseDocUserId = TODO(),
+            firebaseDocId = TODO()
         )
 
         financialPeriod = FinancialPeriod(
             startDate = Date(),
             endDate = Date(),
-            initialBalance = 1000.0,
-            finalBalance = 1100.0,
             totalIncome = 100.0,
-            totalExpenses = 0.0
+            totalExpenses = 0.0,
+            userId = 0,
         )
     }
 
@@ -178,7 +183,7 @@ class AppDatabaseTest {
         val retrievedPeriod = financialPeriodDao.getPeriodById(1)
 
         // Validate that the retrieved financial period has the expected initial balance.
-        assertThat(retrievedPeriod?.initialBalance, equalTo(1000.0))
+        assertThat(retrievedPeriod?.totalIncome, equalTo(100.0))
     }
 
     @Test
@@ -190,14 +195,14 @@ class AppDatabaseTest {
         val retrievedPeriod = financialPeriodDao.getPeriodById(1)
 
         val updatedPeriod = retrievedPeriod?.copy(
-            initialBalance = 2000.0
+            totalIncome = 2000.0
         )
 
         financialPeriodDao.update(updatedPeriod!!)
 
         val retrievedUpdatedPeriod = financialPeriodDao.getPeriodById(1)
 
-        assertThat(retrievedUpdatedPeriod?.initialBalance, equalTo(2000.0))
+        assertThat(retrievedUpdatedPeriod?.totalIncome, equalTo(2000.0))
     }
 
     @Test

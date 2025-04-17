@@ -20,4 +20,14 @@ interface FinancialPeriodDao {
 
     @Query("SELECT * FROM financial_period WHERE id = :id")
     suspend fun getPeriodById(id: Int): FinancialPeriod?
+
+    @Query("SELECT * FROM financial_period WHERE userId = :userId")
+    suspend fun getPeriodsByUserId(userId: Long?): List<FinancialPeriod>
+
+    @Query("SELECT * FROM financial_period WHERE userId = :userId AND isSelected = 1")
+    suspend fun getSelectedPeriodByUserId(userId: Long): FinancialPeriod?
+
+    @Query("SELECT * FROM financial_period WHERE userId = :userId AND id = :periodId")
+    suspend fun getPeriodByUserIdAndPeriodId(userId: Long, periodId: Int) : FinancialPeriod?
+
 }

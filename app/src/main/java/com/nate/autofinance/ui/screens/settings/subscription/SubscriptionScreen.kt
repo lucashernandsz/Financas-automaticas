@@ -33,8 +33,8 @@ import com.nate.autofinance.ui.components.AppTopBarPageTitle
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionScreen(
-    monthlyPrice: String = "R$10.00",
-    annualPrice: String = "R$3.99",
+    monthlyPrice: String = "R\$10.00",
+    annualPrice: String = "R\$3.99",
     onClose: () -> Unit = {},
     onStartTrial: () -> Unit = {},
 ) {
@@ -125,7 +125,6 @@ fun SubscriptionScreen(
                     Spacer(Modifier.width(8.dp))
                     Text("Start 7‑day free trial", color = Color.White)
                 }
-
             }
         }
     }

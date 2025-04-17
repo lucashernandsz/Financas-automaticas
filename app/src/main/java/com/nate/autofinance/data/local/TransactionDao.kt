@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.nate.autofinance.domain.models.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
@@ -22,7 +23,6 @@ interface TransactionDao {
     suspend fun getTransactionById(id: Int): Transaction?
 
     @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :financialPeriodId")
-    suspend fun getTransactionByFinancialPeriodId(financialPeriodId: Int): List<Transaction> {
-        return getTransactionByFinancialPeriodId(financialPeriodId)
-    }
+    suspend fun getTransactionsByFinancialPeriodId(financialPeriodId: Int): List<Transaction>
 }
+

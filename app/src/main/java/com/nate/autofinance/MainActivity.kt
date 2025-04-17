@@ -1,6 +1,5 @@
 package com.nate.autofinance
 
-import SettingsMenuScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,13 +15,14 @@ import com.nate.autofinance.ui.screens.register.RegisterScreen
 import com.nate.autofinance.ui.screens.transactionList.TransactionListScreen
 import com.nate.autofinance.ui.screens.transactionList.AddTransactionScreen
 import com.nate.autofinance.ui.screens.transactionList.editTransaction.EditTransactionScreen
+import com.nate.autofinance.ui.screens.settings.SettingsMenuScreen
 import com.nate.autofinance.ui.screens.settings.appSettings.AppSettingsScreen
 import com.nate.autofinance.ui.screens.settings.financialPeriods.FinancialPeriodsScreen
 import com.nate.autofinance.ui.screens.settings.info.PersonalInfoScreen
 import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.StartNewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
 import com.nate.autofinance.ui.theme.AutofinanceTheme
-import java.util.*
+import java.util.Date
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,16 +83,17 @@ fun MainApp() {
                 onTransactionsClick = { /* ação se necessário */ },
                 onAddTransactionClick = { navController.navigate("addTransaction") },
                 onSettingsClick = { navController.navigate("settings") },
-                onTransactionClick = { transaction ->
+                onTransactionClick = { transaction: Transaction ->
                     // Exemplo: passando dados ou utilizando ViewModel para transferir o objeto
                     navController.navigate("editTransaction")
-                }
+                },
+                viewModel = TODO()
             )
         }
         composable("addTransaction") {
             AddTransactionScreen(
                 onBack = { navController.popBackStack() },
-                onSave = { transaction ->
+                onSave = { transaction : Transaction ->
                     // Lógica para salvar a transação
                     navController.popBackStack()
                 }
@@ -106,6 +107,10 @@ fun MainApp() {
                     amount = 1500.0,
                     description = "Salário",
                     category = "Ganho",
+                    userId = 0,
+                    financialPeriodId = 0,
+                    imported = false,
+                    firebaseDocId = "documentId"
                 ),
                 onBack = { navController.popBackStack() },
                 onSave = { updatedTransaction ->
@@ -114,7 +119,7 @@ fun MainApp() {
                 }
             )
         }
-        // Rota para o menu de configurações (SettingsMenuScreen)
+        // Rota para o menu de configurações
         composable("settings") {
             SettingsMenuScreen(
                 onBack = { navController.popBackStack() },
@@ -128,7 +133,7 @@ fun MainApp() {
         // Rota para Informações Pessoais
         composable("personalInfo") {
             PersonalInfoScreen(
-                email = "user@example.com", // Valor de exemplo, substitua conforme necessário
+                email = "user@example.com",
                 password = "********",
                 onBack = { navController.popBackStack() },
                 onEmailChange = { /* lógica para atualizar email */ },
@@ -137,7 +142,7 @@ fun MainApp() {
                 onExitWithoutSave = { navController.popBackStack() }
             )
         }
-        // Rota para Configurações do App (AppSettingsScreen)
+        // Rota para Configurações do App
         composable("appSettings") {
             AppSettingsScreen(
                 isDarkMode = false,
@@ -147,17 +152,17 @@ fun MainApp() {
                 onExit = { navController.popBackStack() }
             )
         }
-        // Rota para Assinatura/Premium (SubscriptionScreen)
+        // Rota para Assinatura/Premium
         composable("subscription") {
             SubscriptionScreen(
                 onClose = { navController.popBackStack() },
                 onStartTrial = { /* lógica para iniciar o teste gratuito */ }
             )
         }
-        // Rota para Iniciar Novo Período Financeiro (StartNewPeriodScreen)
+        // Rota para Iniciar Novo Período Financeiro
         composable("newFinancialPeriod") {
             StartNewPeriodScreen(
-                currentBalance = 0.0, // Valor de exemplo, ajuste conforme sua lógica
+                currentBalance = 0.0,
                 onClose = { navController.popBackStack() },
                 onStartPeriod = {
                     // Lógica para iniciar o novo período
@@ -165,17 +170,17 @@ fun MainApp() {
                 }
             )
         }
-        // Rota para Navegar entre Períodos Financeiros (FinancialPeriodsScreen)
+        // Rota para Navegar entre Períodos Financeiros
         composable("financialPeriods") {
             FinancialPeriodsScreen(
-                periods = listOf("Janeiro", "Fevereiro", "Março"), // Exemplo de lista de períodos
+                periods = listOf("Janeiro", "Fevereiro", "Março"),
                 selected = emptySet(),
                 onBack = { navController.popBackStack() },
-                onSelectPeriod = { index ->
-                    // Lógica para selecionar um período
+                onSelectPeriod = { index: Int ->
+                    // Lógica para selecionar um período, ex: navegar para detalhes do período selecionado.
                 },
                 onDelete = {
-                    // Lógica para deletar os períodos selecionados
+                    // Lógica para deletar os períodos selecionados.
                 }
             )
         }

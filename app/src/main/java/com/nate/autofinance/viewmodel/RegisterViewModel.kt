@@ -1,38 +1,40 @@
+// app/src/main/java/com/nate/autofinance/viewmodel/RegisterViewModel.kt
 package com.nate.autofinance.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.data.auth.AuthRepository
+import com.nate.autofinance.data.repository.UserRepository
+import com.nate.autofinance.domain.models.User
+import com.nate.autofinance.domain.usecases.period.CreateDefaultPeriodUseCase
+import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// Define os possíveis estados do cadastro
 sealed class RegisterState {
-    object Idle : RegisterState()
+    object Idle    : RegisterState()
     object Loading : RegisterState()
     data class Success(val user: FirebaseUser) : RegisterState()
-    data class Error(val message: String) : RegisterState()
+    data class Error  (val message: String)   : RegisterState()
 }
 
 class RegisterViewModel(
-    private val authRepository: AuthRepository = AuthRepository()
-) : ViewModel() {
+    application: Application,
+    private val authRepository: AuthRepository = AuthRepository(),
+    private val userRepository: UserRepository,
+    private val createDefaultPeriod: CreateDefaultPeriodUseCase
+) : AndroidViewModel(application) {
 
-    // Estado interno que a ViewModel gerencia
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
-    // Estado exposto para a UI (imutável)
     val registerState: StateFlow<RegisterState> = _registerState
 
-    /**
-     * Função para realizar o cadastro.
-     * Recebe o nome, email, senha e confirmação da senha.
-     * Faz validações básicas e chama o método de registro do AuthRepository.
-     */
+    private val appContext = application
+
     fun register(name: String, email: String, password: String, confirmPassword: String) {
-        // Valida os campos antes de prosseguir
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+        if (name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
             _registerState.value = RegisterState.Error("Preencha todos os campos!")
             return
         }
@@ -44,20 +46,28 @@ class RegisterViewModel(
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
             try {
-                val user = authRepository.registerUser(email, password)
-                if (user != null) {
-                    // Aqui, se necessário, você pode atualizar o displayName do usuário com o nome informado
-                    _registerState.value = RegisterState.Success(user)
-                } else {
-                    _registerState.value = RegisterState.Error("Erro ao registrar usuário.")
-                }
+                val firebaseUser = authRepository.registerUser(email, password)
+                    ?: throw IllegalStateException("Falha no Auth")
+
+                val domainUser = User(
+                    name         = name,
+                    email        = firebaseUser.email.orEmpty(),
+                    isSubscribed = false
+                )
+                val localUserId = userRepository.addUser(domainUser)
+
+                SessionManager.saveUserId(appContext, localUserId)
+
+                createDefaultPeriod(localUserId)
+
+                _registerState.value = RegisterState.Success(firebaseUser)
+
             } catch (e: Exception) {
                 _registerState.value = RegisterState.Error(e.message ?: "Erro desconhecido.")
             }
         }
     }
 
-    // Função opcional para resetar o estado para Idle
     fun resetState() {
         _registerState.value = RegisterState.Idle
     }

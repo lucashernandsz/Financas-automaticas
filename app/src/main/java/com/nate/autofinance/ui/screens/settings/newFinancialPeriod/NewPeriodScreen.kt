@@ -17,9 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
-import java.text.NumberFormat
-import java.util.Locale
-
+import com.nate.autofinance.utils.toBrazilianCurrency
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,9 +64,6 @@ fun StartNewPeriodScreen(
         }
     }
 }
-
-private fun Double.toBrazilianCurrency(): String =
-    NumberFormat.getCurrencyInstance(Locale("pt", "BR")).format(this)
 
 @Preview(showBackground = true)
 @Composable
