@@ -12,7 +12,7 @@ class CreateNewPeriodUseCase(
     private val periodRepository: PeriodRepository
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend operator fun invoke(userId: Long) {
+    suspend operator fun invoke(userId: Int) {
         val today = LocalDate.now().toDate()
 
         val old = periodRepository.getSelectedPeriodForUser(userId)

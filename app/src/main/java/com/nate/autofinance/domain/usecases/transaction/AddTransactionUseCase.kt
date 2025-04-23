@@ -7,7 +7,6 @@ import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.utils.SessionManager
-import java.util.Date
 
 class AddTransactionUseCase(
     private val transactionRepo: TransactionRepository,

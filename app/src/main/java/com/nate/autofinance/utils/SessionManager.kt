@@ -7,18 +7,18 @@ object SessionManager {
     private const val PREFS_NAME = "auto_finance_prefs"
     private const val KEY_USER_ID = "KEY_USER_ID"
 
-    fun saveUserId(context: Context, userId: Long?) {
+    fun saveUserId(context: Context, userId: Int?) {
         val prefs = context
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit() {
-            putLong(KEY_USER_ID, userId ?: -1)
+            putInt(KEY_USER_ID, userId ?: -1)
         }
     }
 
-    fun getUserId(context: Context): Long? {
+    fun getUserId(context: Context): Int? {
         val prefs = context
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val id = prefs.getLong(KEY_USER_ID, -1)
+        val id = prefs.getInt(KEY_USER_ID, -1)
         return if (id >= 0) id else null
     }
 

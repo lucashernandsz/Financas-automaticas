@@ -106,4 +106,8 @@ class TransactionRepository(
     suspend fun getTransactionById(id: Int): Transaction? = withContext(ioDispatcher) {
         transactionDao.getTransactionById(id)
     }
+
+    suspend fun fetchRemoteTransactions(firebaseUserId: String): List<Transaction> = withContext(ioDispatcher) {
+        firebaseTransactionService.getTransactionsForUser(firebaseUserId)
+    }
 }

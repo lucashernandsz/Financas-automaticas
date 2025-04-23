@@ -40,10 +40,10 @@ class FirebaseTransactionService(
     }
 
     // Busca e retorna a lista de transações associadas a um determinado usuário.
-    suspend fun getTransactionsForUser(userId: String): List<Transaction> {
-        val querySnapshot = transactionsCollection.whereEqualTo("userId", userId).get().await()
-        return querySnapshot.documents.mapNotNull { document ->
-            document.toObject(Transaction::class.java)
-        }
+    suspend fun getTransactionsForUser(firebaseUid: String): List<Transaction> {
+        return transactionsCollection
+            .whereEqualTo("firebaseDocUserId", firebaseUid)  // ← novo
+            .get().await()
+            .map { it.toObject(Transaction::class.java) }
     }
 }

@@ -32,10 +32,10 @@ class FirebasePeriodService(
         periodsCollection.document(documentId).delete().await()
     }
 
-    suspend fun getFinancialPeriodsForUser(userId: Int): List<FinancialPeriod> {
-        val querySnapshot = periodsCollection.whereEqualTo("userId", userId).get().await()
-        return querySnapshot.documents.mapNotNull { document ->
-            document.toObject(FinancialPeriod::class.java)
-        }
+    suspend fun getFinancialPeriodsForUser(documentId: String): List<FinancialPeriod> {
+        return periodsCollection
+            .whereEqualTo("firebaseDocUserId", documentId)
+            .get().await()
+            .map { it.toObject(FinancialPeriod::class.java) }
     }
 }

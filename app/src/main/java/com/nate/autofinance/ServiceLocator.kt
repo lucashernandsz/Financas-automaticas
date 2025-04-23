@@ -2,6 +2,7 @@
 package com.nate.autofinance
 
 import FetchTransactionsForSelectedPeriodUseCase
+import SyncManager
 import com.nate.autofinance.data.local.AppDatabase
 import com.nate.autofinance.data.remote.FirebasePeriodService
 import com.nate.autofinance.data.remote.FirebaseTransactionService
@@ -88,6 +89,18 @@ object ServiceLocator {
             periodRepository,
             SessionManager,
             context
+        )
+    }
+
+    val syncManager by lazy {
+        SyncManager(
+            txRepo     = transactionRepository,
+            periodRepo = periodRepository,
+            userRepo   = userRepository,
+            txDao      = transactionDao,
+            periodDao  = financialPeriodDao,
+            session    = SessionManager,
+            context    = context
         )
     }
 }

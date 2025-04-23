@@ -86,20 +86,24 @@ class PeriodRepository(
         }
     }
 
-    suspend fun getFinancialPeriodsForUser(userId: Long?): List<FinancialPeriod> = withContext(ioDispatcher) {
+    suspend fun getFinancialPeriodsForUser(userId: Int?): List<FinancialPeriod> = withContext(ioDispatcher) {
         periodDao.getPeriodsByUserId(userId)
     }
 
-    suspend fun getSelectedPeriodForUser(userId: Long): FinancialPeriod? = withContext(ioDispatcher) {
+    suspend fun getSelectedPeriodForUser(userId: Int): FinancialPeriod? = withContext(ioDispatcher) {
         periodDao.getSelectedPeriodByUserId(userId)
     }
 
-    suspend fun getPeriodForUser(userId: Long, periodId: Int): FinancialPeriod? = withContext(ioDispatcher) {
+    suspend fun getPeriodForUser(userId: Int, periodId: Int): FinancialPeriod? = withContext(ioDispatcher) {
         periodDao.getPeriodByUserIdAndPeriodId(userId, periodId)
     }
 
-    suspend fun getPeriodsForUser(userId: Long): List<FinancialPeriod> = withContext(ioDispatcher) {
+    suspend fun getPeriodsForUser(userId: Int): List<FinancialPeriod> = withContext(ioDispatcher) {
         periodDao.getPeriodsByUserId(userId)
+    }
+
+    suspend fun fetchRemotePeriods(firebaseUserId: String): List<FinancialPeriod> = withContext(ioDispatcher) {
+        firebasePeriodService.getFinancialPeriodsForUser(firebaseUserId)
     }
 
 }

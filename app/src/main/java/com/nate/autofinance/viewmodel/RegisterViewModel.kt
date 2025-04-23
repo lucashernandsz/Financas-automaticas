@@ -54,8 +54,8 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                 val localUserId = userRepository.addUser(domainUser)
                     ?: throw IllegalStateException("Falha ao criar usuário local")
 
-                SessionManager.saveUserId(appContext, localUserId)
-                createDefaultPeriod(localUserId)
+                SessionManager.saveUserId(appContext, localUserId.toInt())
+                createDefaultPeriod(localUserId.toInt())
 
                 _state.value = RegisterState.Success(firebaseUser)
             } catch (e: Exception) {

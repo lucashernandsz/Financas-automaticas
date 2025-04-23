@@ -16,7 +16,7 @@ class CreateDefaultPeriodUseCase(
     private val periodRepository: PeriodRepository
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend operator fun invoke(userId: Long?) {
+    suspend operator fun invoke(userId: Int?) {
         val existing = periodRepository.getFinancialPeriodsForUser(userId)
         if (existing.isNotEmpty()) return
 

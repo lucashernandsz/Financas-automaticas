@@ -25,7 +25,7 @@ data class Transaction(
     val amount: Double,
     val description: String,
     val category: String,
-    val userId: Long? = null,             // Se necessário; você pode remover se a associação for indireta via FinancialPeriod
+    val userId: Int? = null,             // Se necessário; você pode remover se a associação for indireta via FinancialPeriod
     val financialPeriodId: Int,          // Não nulo: cada transação deve pertencer a um período
     val imported: Boolean = false,
     val syncStatus: SyncStatus = SyncStatus.PENDING,

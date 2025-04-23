@@ -48,9 +48,9 @@ fun SettingsMenuScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsItem(Icons.Default.Person, "Informações pessoais", enabled = true, onClick = onNavigateToProfile)
+            //SettingsItem(Icons.Default.Person, "Informações pessoais", enabled = true, onClick = onNavigateToProfile)
             //SettingsItem(Icons.Default.Build, "Contas conectadas", enabled = true, onClick = onNavigateToAccounts)
-            SettingsItem(Icons.Default.Settings, "Configurações do aplicativo", enabled = true, onClick = onNavigateToAppSettings)
+            //SettingsItem(Icons.Default.Settings, "Configurações do aplicativo", enabled = true, onClick = onNavigateToAppSettings)
             SettingsItem(Icons.Default.AddCircle, "Gerenciar categorias", enabled = isPremium, onClick = onNavigateToCategories)
             SettingsItem(Icons.Default.Notifications, "Inserção automática por notificação", enabled = isPremium, onClick = onNavigateToNotifications)
 

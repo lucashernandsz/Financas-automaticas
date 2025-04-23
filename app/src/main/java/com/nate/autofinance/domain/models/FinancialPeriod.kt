@@ -24,7 +24,7 @@ data class FinancialPeriod(
     val isSelected: Boolean = false,
     val totalIncome: Double = 0.0,
     val totalExpenses: Double = 0.0,
-    val userId: Long?,                     // Alterado para Int para garantir consistência com User
+    val userId: Int?,                     // Alterado para Int para garantir consistência com User
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val firebaseDocUserId: String? = null, // ID do usuário no Firebase
     val firebaseDocId: String? = null

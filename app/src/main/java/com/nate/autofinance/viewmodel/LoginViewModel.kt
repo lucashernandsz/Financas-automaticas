@@ -1,11 +1,14 @@
 // app/src/main/java/com/nate/autofinance/viewmodel/LoginViewModel.kt
 package com.nate.autofinance.viewmodel
 
+import SyncWorker
 import android.app.Application
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.auth.AuthRepository
@@ -43,7 +46,14 @@ class LoginViewModel(
                 val firebaseUser = authRepository.loginUser(email, password)
                     ?: throw IllegalStateException("Falha na autenticação")
                 val localUser = userRepository.getOrCreateUser(firebaseUser)
-                SessionManager.saveUserId(appContext, localUser.id.toLong())
+                SessionManager.saveUserId(appContext, localUser.id.toInt())
+
+                val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                    .build()
+                WorkManager
+                    .getInstance(appContext)
+                    .enqueue(syncRequest)
+
                 _loginState.value = LoginState.Success(firebaseUser)
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error(e.message ?: "Erro desconhecido")
@@ -54,8 +64,13 @@ class LoginViewModel(
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
-            // limpa a sessão
+
+            WorkManager
+                .getInstance(appContext)
+                .cancelUniqueWork("auto_sync")
+
             SessionManager.clear(getApplication())
+
             _loginState.value = LoginState.Idle
         }
     }
