@@ -1,51 +1,69 @@
+// app/src/main/java/com/nate/autofinance/viewmodel/EditTransactionViewModel.kt
 package com.nate.autofinance.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.domain.models.Transaction
-import com.nate.autofinance.domain.usecases.transaction.EditTransactionUseCase
-import com.nate.autofinance.domain.usecases.transaction.DeleteTransactionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// Estados distintos para atualização e exclusão.
 sealed class EditTransactionState {
-    object Idle : EditTransactionState()
-    object Loading : EditTransactionState()
-    object UpdateSuccess : EditTransactionState()
-    object DeleteSuccess : EditTransactionState()
+    object Idle          : EditTransactionState()
+    object Loading       : EditTransactionState()
+    object UpdateSuccess: EditTransactionState()
+    object DeleteSuccess: EditTransactionState()
     data class Error(val message: String) : EditTransactionState()
 }
 
-class EditTransactionViewModel(
-    private val editTransactionUseCase: EditTransactionUseCase,
-    private val deleteTransactionUseCase: DeleteTransactionUseCase
-) : ViewModel() {
+class EditTransactionViewModel : ViewModel() {
 
+    private val getByIdUseCase    = ServiceLocator.getTransactionByIdUseCase
+    private val editUseCase       = ServiceLocator.editTransactionUseCase
+    private val deleteUseCase     = ServiceLocator.deleteTransactionUseCase
+
+    // transação que será editada
+    private val _transaction = MutableStateFlow<Transaction?>(null)
+    val transaction: StateFlow<Transaction?> = _transaction
+
+    // estado de loading / sucesso / erro
     private val _state = MutableStateFlow<EditTransactionState>(EditTransactionState.Idle)
-    val state: StateFlow<EditTransactionState> get() = _state
+    val state: StateFlow<EditTransactionState> = _state
 
-    fun editTransaction(transaction: Transaction) {
+    /** Busca a transação pelo ID e popula _transaction */
+    fun loadTransaction(id: Int) {
         viewModelScope.launch {
-            _state.value = EditTransactionState.Loading
-            try {
-                editTransactionUseCase(transaction)
-                _state.value = EditTransactionState.UpdateSuccess
-            } catch (e: Exception) {
-                _state.value = EditTransactionState.Error(e.message ?: "Erro desconhecido ao editar transação")
+            _transaction.value = try {
+                getByIdUseCase(id)
+            } catch (_: Exception) {
+                null
             }
         }
     }
 
-    fun deleteTransaction(transaction: Transaction) {
+    /** Salva as alterações */
+    fun editTransaction(tx: Transaction) {
         viewModelScope.launch {
             _state.value = EditTransactionState.Loading
             try {
-                deleteTransactionUseCase(transaction)
+                editUseCase(tx)
+                _state.value = EditTransactionState.UpdateSuccess
+            } catch (e: Exception) {
+                _state.value = EditTransactionState.Error(e.message ?: "Erro ao atualizar")
+            }
+        }
+    }
+
+    /** Exclui a transação */
+    fun deleteTransaction(tx: Transaction) {
+        viewModelScope.launch {
+            _state.value = EditTransactionState.Loading
+            try {
+                deleteUseCase(tx)
                 _state.value = EditTransactionState.DeleteSuccess
             } catch (e: Exception) {
-                _state.value = EditTransactionState.Error(e.message ?: "Erro desconhecido ao deletar transação")
+                _state.value = EditTransactionState.Error(e.message ?: "Erro ao excluir")
             }
         }
     }

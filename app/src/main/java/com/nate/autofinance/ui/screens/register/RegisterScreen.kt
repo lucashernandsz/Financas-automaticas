@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.R
@@ -16,84 +17,102 @@ import com.nate.autofinance.viewmodel.RegisterViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: (String) -> Unit, // Callback para navegação com mensagem
-    onNavigateToLogin: () -> Unit,         // Callback para voltar manualmente para a tela de login
+    onRegisterSuccess: (String) -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: RegisterViewModel = viewModel()
 ) {
-    // Observa o estado de registro exposto pelo ViewModel
-    val registerState by viewModel.registerState.collectAsState()
+    // 1) Observa o estado de registro
+    val state by viewModel.registerState.collectAsState()
 
-    // Estados locais para os campos do formulário
+    // 2) Campos do formulário
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // Define mensagem de erro a partir do estado, se houver
-    val errorMessage = if (registerState is RegisterState.Error) {
-        (registerState as RegisterState.Error).message
-    } else {
-        ""
-    }
+    // 3) SnackHost para mensagens de erro
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Indica se está em Loading
-    val isLoading = registerState is RegisterState.Loading
-
-    // Quando o registro for bem-sucedido, aciona o callback para navegar para a tela de login
-    LaunchedEffect(registerState) {
-        if (registerState is RegisterState.Success) {
-            onRegisterSuccess("Cadastro realizado com sucesso!")
+    // 4) Side‑effects para reagir a mudanças de estado
+    LaunchedEffect(state) {
+        when (state) {
+            is RegisterState.Error -> {
+                // exibe o erro em um snackbar
+                val message = (state as RegisterState.Error).message
+                snackbarHostState.showSnackbar(message)
+            }
+            is RegisterState.Success -> {
+                // navega para login com mensagem
+                onRegisterSuccess("Cadastro realizado com sucesso!")
+            }
+            else -> { /* Idle ou Loading: nada a fazer */ }
         }
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            AppLargeCenteredTopBar(stringResource(id = R.string.create_account))
+            AppLargeCenteredTopBar(stringResource(R.string.create_account))
         }
-    ) { paddingValues ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Crie sua conta e comece a organizar suas finanças!",
-                style = MaterialTheme.typography.bodyLarge
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nome") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            // Composable com os campos de cadastro (RegisterFields)
-            RegisterFields(
-                name = name,
-                onNameChange = { name = it },
-                email = email,
-                onEmailChange = { email = it },
-                password = password,
-                onPasswordChange = { password = it },
-                confirmPassword = confirmPassword,
-                onConfirmPasswordChange = { confirmPassword = it },
-                errorMessage = errorMessage
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Senha") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = { Text("Confirme a senha") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(16.dp))
             Button(
                 onClick = { viewModel.register(name, email, password, confirmPassword) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading
+                enabled = state !is RegisterState.Loading
             ) {
-                if (isLoading) {
+                if (state is RegisterState.Loading) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 } else {
                     Text("Cadastrar")
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            // Botão para voltar à tela de login
-            TextButton(onClick = { onNavigateToLogin() }) {
-                Text("Já possui uma conta? Faça login")
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = onNavigateToLogin) {
+                Text("Já possui conta? Entrar")
             }
         }
     }

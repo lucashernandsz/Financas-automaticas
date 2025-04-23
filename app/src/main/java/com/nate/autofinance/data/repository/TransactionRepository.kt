@@ -3,6 +3,7 @@ package com.nate.autofinance.data.repository
 import android.util.Log
 import com.nate.autofinance.data.local.TransactionDao
 import com.nate.autofinance.data.remote.FirebaseTransactionService
+import com.nate.autofinance.domain.models.SyncStatus
 import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -100,5 +101,9 @@ class TransactionRepository(
 
     suspend fun getTransactionsByPeriodId(periodId: Int): List<Transaction> = withContext(ioDispatcher) {
         transactionDao.getTransactionsByFinancialPeriodId(periodId)
+    }
+
+    suspend fun getTransactionById(id: Int): Transaction? = withContext(ioDispatcher) {
+        transactionDao.getTransactionById(id)
     }
 }

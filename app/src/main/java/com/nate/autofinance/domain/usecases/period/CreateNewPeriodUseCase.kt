@@ -1,6 +1,8 @@
 // app/src/main/java/com/nate/autofinance/domain/usecases/CreateNewPeriodUseCase.kt
 package com.nate.autofinance.domain.usecases.period
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.domain.models.FinancialPeriod
 import com.nate.autofinance.utils.toDate
@@ -9,6 +11,7 @@ import java.time.LocalDate
 class CreateNewPeriodUseCase(
     private val periodRepository: PeriodRepository
 ) {
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend operator fun invoke(userId: Long) {
         val today = LocalDate.now().toDate()
 

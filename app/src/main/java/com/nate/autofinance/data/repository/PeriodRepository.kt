@@ -4,6 +4,7 @@ import android.util.Log
 import com.nate.autofinance.data.local.FinancialPeriodDao
 import com.nate.autofinance.data.remote.FirebasePeriodService
 import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.domain.models.SyncStatus
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

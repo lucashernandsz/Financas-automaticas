@@ -27,11 +27,17 @@ class AddTransactionUseCase(
         else
             Categories.OTHER                                                            // :contentReference[oaicite:4]{index=4}&#8203;:contentReference[oaicite:5]{index=5}
 
+        val amount = if (category != Categories.INCOME && transaction.amount > 0)
+            -transaction.amount
+        else
+            transaction.amount
+
         val tx = transaction.copy(
-            userId              = userId,
-            financialPeriodId   = period.id,
-            category            = category,
-            date                = transaction.date ?: Date()  // garante data (ou use outra lógica)
+            userId = userId,
+            financialPeriodId = period.id,
+            category = category,
+            amount = amount,
+            date = transaction.date
         )
 
         transactionRepo.addTransaction(tx)                                              // :contentReference[oaicite:6]{index=6}&#8203;:contentReference[oaicite:7]{index=7}

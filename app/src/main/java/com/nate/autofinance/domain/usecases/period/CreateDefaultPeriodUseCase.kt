@@ -1,6 +1,8 @@
 // CreateDefaultPeriodUseCase.kt
 package com.nate.autofinance.domain.usecases.period
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.domain.models.FinancialPeriod
 import com.nate.autofinance.utils.toDate
@@ -13,17 +15,17 @@ import java.time.LocalDate
 class CreateDefaultPeriodUseCase(
     private val periodRepository: PeriodRepository
 ) {
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend operator fun invoke(userId: Long?) {
         val existing = periodRepository.getFinancialPeriodsForUser(userId)
         if (existing.isNotEmpty()) return
 
         val today = LocalDate.now()
         val startOfMonth = today.withDayOfMonth(1)
-        val endOfMonth   = today.withDayOfMonth(today.lengthOfMonth())
 
         val defaultPeriod = FinancialPeriod(
             startDate = startOfMonth.toDate(),
-            endDate = endOfMonth.toDate(),
+            endDate = null,
             isSelected = true,
             userId = userId
         )

@@ -5,15 +5,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.components.AppTextField
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
 import com.nate.autofinance.utils.Categories
+import com.nate.autofinance.viewmodel.EditTransactionState
+import com.nate.autofinance.viewmodel.EditTransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -21,114 +24,112 @@ import java.util.*
 @Composable
 fun EditTransactionScreen(
     transaction: Transaction,
+    viewModel: EditTransactionViewModel = viewModel(),   // injeta o VM
     onBack: () -> Unit = {},
-    onSave: (Transaction) -> Unit = {},
-    onDelete: (Transaction) -> Unit = {}
+    onSaveSuccess: () -> Unit = {},
+    onDeleteSuccess: () -> Unit = {}
 ) {
+    val state by viewModel.state.collectAsState()
+
     var amount by remember { mutableStateOf(transaction.amount.toString()) }
     var dateText by remember {
-        mutableStateOf(
-            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                .format(transaction.date)
-        )
+        mutableStateOf(SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(transaction.date))
     }
     var selectedCategory by remember { mutableStateOf(transaction.category) }
     var description by remember { mutableStateOf(transaction.description) }
 
+    // navega de volta quando a edição ou exclusão for concluída
+    LaunchedEffect(state) {
+        when (state) {
+            EditTransactionState.UpdateSuccess -> onSaveSuccess()
+            EditTransactionState.DeleteSuccess -> onDeleteSuccess()
+            else -> {}
+        }
+    }
+
     Scaffold(
         topBar = {
             AppTopBarPageTitle(
-                text = "Editar Transação",
-                showBackButton = true,
-                onBackClick = onBack
+                text            = "Editar Transação",
+                showBackButton  = true,
+                onBackClick     = onBack
             )
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text("Categoria", style = MaterialTheme.typography.labelLarge)
-            // Usa sua lista fixa de categorias
-            CategoryFilterRow(
-                categories = Categories.fixedCategories,  // :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
-                selectedCategory = selectedCategory,
+                CategoryFilterRow(
+                categories         = Categories.fixedCategories,
+                selectedCategory   = selectedCategory,
                 onCategorySelected = { selectedCategory = it }
             )
 
             AppTextField(
                 value = amount,
                 onValueChange = { amount = it },
-                placeholder = "Valor",
+                placeholder    = "Valor",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
             AppTextField(
                 value = dateText,
                 onValueChange = { dateText = it },
-                placeholder = "Data (dd/MM/yyyy)"
+                placeholder    = "Data (dd/MM/yyyy)"
             )
 
             AppTextField(
-                value = description,
+                value      = description,
                 onValueChange = { description = it },
-                placeholder = "Descrição",
-                singleLine = false
+                placeholder    = "Descrição",
+                singleLine     = false
             )
+
+            if (state is EditTransactionState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+            if (state is EditTransactionState.Error) {
+                Text(
+                    text  = (state as EditTransactionState.Error).message,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
 
             Button(
                 onClick = {
-                    val amountValue = amount.toDoubleOrNull() ?: 0.0
+                    val amt = amount.toDoubleOrNull() ?: 0.0
                     val date = try {
-                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                            .parse(dateText)!!
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dateText)!!
                     } catch (_: Exception) {
-                        Date()
+                        transaction.date
                     }
-
-                    onSave(
+                    viewModel.editTransaction(
                         transaction.copy(
-                            date = date,
-                            amount = amountValue,
-                            category = selectedCategory,
+                            date        = date,
+                            amount      = amt,
+                            category    = selectedCategory,
                             description = description
                         )
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                enabled  = state !is EditTransactionState.Loading
             ) {
                 Text("Salvar", color = Color.White)
             }
 
-            Button(
-                onClick = { onDelete(transaction) },
+            OutlinedButton(
+                onClick = { viewModel.deleteTransaction(transaction) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                enabled  = state !is EditTransactionState.Loading
             ) {
-                Text("Excluir", color = Color.White)
+                Text("Excluir", color = MaterialTheme.colorScheme.error)
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EditTransactionScreenPreview() {
-    EditTransactionScreen(
-        transaction = Transaction(
-            id = 42,
-            date = Date(),
-            amount = 123.45,
-            description = "Exemplo",
-            category = Categories.OTHER,      // :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
-            userId = null,
-            financialPeriodId = 0
-        )
-    )
 }

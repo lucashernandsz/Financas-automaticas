@@ -7,106 +7,115 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.R
 import com.nate.autofinance.ui.components.AppLargeCenteredTopBar
 import com.nate.autofinance.viewmodel.LoginState
 import com.nate.autofinance.viewmodel.LoginViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,           // Callback para redirecionar à tela de transações
-    onNavigateToRegister: () -> Unit,       // Callback para navegar para a tela de cadastro
-    snackbarMessage: String? = null         // Mensagem opcional (vinda do cadastro)
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    snackbarMessage: String? = null
 ) {
-    val loginViewModel: LoginViewModel = viewModel()
-    val loginState by loginViewModel.loginState.collectAsState()
+    // injeta o ViewModel
+    val viewModel: LoginViewModel = viewModel()
+    // observa o estado (Idle / Loading / Success / Error)
+    val state by viewModel.loginState.collectAsState()
 
-    // Estados locais para os campos de entrada
+    // campos de input
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val errorMessage = if (loginState is LoginState.Error) {
-        (loginState as LoginState.Error).message
-    } else {
-        ""
-    }
-    val isLoading = loginState is LoginState.Loading
-
-    // Cria o host do Snackbar
+    // host para exibir Snackbars vindas de outras telas
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Exibe o snackbar se uma mensagem for passada (vindo, por exemplo, do cadastro)
+    // se veio mensagem por parâmetro, exibe uma única vez
     LaunchedEffect(snackbarMessage) {
-        snackbarMessage?.let {
-            snackbarHostState.showSnackbar(it)
-        }
+        snackbarMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
-    // Quando o login for bem-sucedido, chama o callback para redirecionar à tela de transações
-    LaunchedEffect(loginState) {
-        if (loginState is LoginState.Success) {
+    // ao sucesso de login, dispara a navegação
+    LaunchedEffect(state) {
+        if (state is LoginState.Success) {
             onLoginSuccess()
         }
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            AppLargeCenteredTopBar(stringResource(id = R.string.welcome_message))
-        }
-    ) { paddingValues ->
+        topBar = { AppLargeCenteredTopBar(stringResource(R.string.welcome_message)) }
+    ) { padding ->
         Column(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Estamos comprometidos em te ajudar a organizar suas finanças. Vamos começar?\n",
+                text = "Estamos comprometidos em te ajudar a organizar suas finanças.\nVamos começar?",
                 style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
+                textAlign = TextAlign.Center
             )
-            LoginFields(
-                email = email,
-                onEmailChange = { email = it },
-                password = password,
-                onPasswordChange = { password = it },
-                errorMessage = errorMessage
-            )
-            // Botão para login com Google (lógica futura)
-            Button(
-                onClick = { /* Ação para login com o Google */ },
+
+            Spacer(Modifier.height(24.dp))
+
+            // Campos de email e senha
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Entrar com o Google")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            // Botão de login que delega a ação para a ViewModel
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Senha") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            // botão de login
             Button(
-                onClick = { loginViewModel.login(email, password) },
+                onClick = { viewModel.login(email, password) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading
+                enabled = state !is LoginState.Loading
             ) {
-                if (isLoading) {
+                if (state is LoginState.Loading) {
                     CircularProgressIndicator(
                         color = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 } else {
                     Text("Entrar")
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
-            // Botão para navegar à tela de cadastro
-            TextButton(onClick = { onNavigateToRegister() }) {
-                Text("Não possui uma conta? Crie aqui")
+
+            // exibe erro localmente, se houver
+            if (state is LoginState.Error) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = (state as LoginState.Error).message,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            // link para registro
+            TextButton(onClick = onNavigateToRegister) {
+                Text("Não possui uma conta? Cadastre‑se")
             }
         }
     }

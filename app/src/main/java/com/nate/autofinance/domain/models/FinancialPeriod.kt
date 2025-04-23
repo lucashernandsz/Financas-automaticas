@@ -1,6 +1,6 @@
 package com.nate.autofinance.domain.models
 
-import SyncStatus
+import com.nate.autofinance.domain.models.SyncStatus
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey

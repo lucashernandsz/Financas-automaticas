@@ -65,4 +65,9 @@ class FirebaseUserService(
         }
         return user
     }
+
+    suspend fun getUserById(id: String): User? {
+        val document = usersCollection.document(id).get().await()
+        return document.toObject(User::class.java)
+    }
 }
