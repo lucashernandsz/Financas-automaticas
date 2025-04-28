@@ -52,7 +52,7 @@ class UserRepository(
     suspend fun getOrCreateUser(firebaseUser: FirebaseUser): User = withContext(ioDispatcher) {
         userDao.getUserByEmail(firebaseUser.email!!)?.let { return@withContext it }
 
-        val remoteUser = firebaseUserService.getUserById(firebaseUser.uid)
+        val remoteUser = firebaseUserService.getUserById(firebaseUser.uid.toString())
 
         val toInsert = (remoteUser
             ?.copy(syncStatus = SyncStatus.SYNCED)

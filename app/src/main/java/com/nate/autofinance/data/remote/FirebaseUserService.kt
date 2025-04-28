@@ -1,6 +1,8 @@
 package com.nate.autofinance.data.remote
 
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.nate.autofinance.domain.models.SyncStatus
 import com.nate.autofinance.domain.models.User
 import kotlinx.coroutines.tasks.await
 
@@ -20,14 +22,22 @@ class FirebaseUserService(
      * @return O ID do documento criado, ou null se a operação falhar.
      */
     suspend fun addUser(user: User): String? {
+        val uid = FirebaseAuth.getInstance().currentUser
+            ?.uid
+            ?: throw IllegalStateException("Nenhum usuário autenticado")
+
         val userMap = hashMapOf(
             "name" to user.name,
             "email" to user.email,
-            "syncStatus" to user.syncStatus.name,
+            "syncStatus" to SyncStatus.SYNCED.name,
             "isSubscribed" to user.isSubscribed
         )
-        val documentRef = usersCollection.add(userMap).await()
-        return documentRef.id
+        usersCollection
+            .document(uid)
+            .set(userMap)
+            .await()
+
+        return uid
     }
 
     /**
@@ -56,18 +66,53 @@ class FirebaseUserService(
      * @param email O email a ser pesquisado.
      * @return Uma instância de [User], ou null se não houver correspondência.
      */
-    suspend fun getUserByEmail(email: String): User? {
-        val querySnapshot = usersCollection.whereEqualTo("email", email).get().await()
-        val document = querySnapshot.documents.firstOrNull()
-        val user = document?.toObject(User::class.java)
-        if (user != null) {
-            user.firebaseDocId = document.id
-        }
-        return user
+
+    suspend fun getUserById(uid: String): User? {
+        val snap = usersCollection.document(uid)
+            .get()
+            .await()
+        if (!snap.exists()) return null
+
+        // mapeia manualmente cada campo
+        val data = snap.data ?: return null
+        val name         = data["name"]         as? String ?: return null
+        val email        = data["email"]        as? String ?: return null
+        val rawStatus    = data["syncStatus"]   as? String ?: SyncStatus.PENDING.name
+        val syncStatus   = try { SyncStatus.valueOf(rawStatus) }
+        catch(_:Exception) { SyncStatus.PENDING }
+        val isSubscribed = data["isSubscribed"] as? Boolean ?: false
+
+        return User(
+            id            = 0,           // será gerado pelo Room
+            name          = name,
+            email         = email,
+            syncStatus    = syncStatus,
+            isSubscribed  = isSubscribed,
+            firebaseDocId = uid
+        )
     }
 
-    suspend fun getUserById(id: String): User? {
-        val document = usersCollection.document(id).get().await()
-        return document.toObject(User::class.java)
+    suspend fun getUserByEmail(email: String): User? {
+        val snaps = usersCollection
+            .whereEqualTo("email", email)
+            .get()
+            .await()
+        val doc = snaps.documents.firstOrNull() ?: return null
+
+        val data = doc.data ?: return null
+        val name         = data["name"]         as? String ?: return null
+        val rawStatus    = data["syncStatus"]   as? String ?: SyncStatus.PENDING.name
+        val syncStatus   = try { SyncStatus.valueOf(rawStatus) }
+        catch(_:Exception) { SyncStatus.PENDING }
+        val isSubscribed = data["isSubscribed"] as? Boolean ?: false
+
+        return User(
+            id            = 0,
+            name          = name,
+            email         = email,
+            syncStatus    = syncStatus,
+            isSubscribed  = isSubscribed,
+            firebaseDocId = doc.id
+        )
     }
 }

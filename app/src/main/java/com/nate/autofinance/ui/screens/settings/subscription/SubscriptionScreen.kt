@@ -35,7 +35,7 @@ import com.nate.autofinance.ui.components.AppTopBarPageTitle
 fun SubscriptionScreen(
     monthlyPrice: String = "R\$10.00",
     annualPrice: String = "R\$3.99",
-    onClose: () -> Unit = {},
+    onBack: () -> Unit = {},
     onStartTrial: () -> Unit = {},
 ) {
     Scaffold(
@@ -43,7 +43,7 @@ fun SubscriptionScreen(
             AppTopBarPageTitle(
                 text = "Subscription",
                 showBackButton = true,
-                onBackClick = onClose
+                onBackClick = onBack
             )
         }
     ) { padding ->

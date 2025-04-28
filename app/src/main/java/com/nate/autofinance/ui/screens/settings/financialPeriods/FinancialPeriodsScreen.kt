@@ -1,55 +1,58 @@
 package com.nate.autofinance.ui.screens.settings.financialPeriods
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
-
+import com.nate.autofinance.utils.toLabel
+import com.nate.autofinance.viewmodel.FinancialPeriodsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FinancialPeriodsScreen(
-    periods: List<String>,
-    selected: Set<Int>,
-    onBack: () -> Unit = {},
-    onSelectPeriod: (Int) -> Unit = {},
-    onDelete: () -> Unit = {}
+    viewModel: FinancialPeriodsViewModel = viewModel(),
+    onBack: () -> Unit = {}
 ) {
+    // 1) Observa o StateFlow do ViewModel
+    val periods by viewModel.periods.collectAsState()
+    val selected by viewModel.selectedIndices.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    // 2) Prepara o host para exibir Snackbars de erro
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
+
+    // 3) Carrega os períodos quando o Composable aparecer
+    LaunchedEffect(Unit) {
+        viewModel.loadPeriods()
+    }
+
+    // 4) Transforma Period -> Label (“De 01/03/2024 até hoje • Saldo: R$ 250,00”)
+    val labels = periods.map { it.toLabel() }
+
     Scaffold(
         topBar = {
             AppTopBarPageTitle(
-                text = "Períodos financeiros" + if (selected.isNotEmpty()) " selecionados: ${selected.size}" else "",
+                text = "Períodos financeiros" + if (selected.isNotEmpty()) " (${selected.size})" else "",
                 showBackButton = true,
-                onBackClick = onBack,
-
+                onBackClick = onBack
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             Modifier
@@ -58,16 +61,18 @@ fun FinancialPeriodsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            periods.forEachIndexed { index, label ->
+            // 5) Lista de cartões
+            labels.forEachIndexed { index, label ->
                 val isSelected = selected.contains(index)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onSelectPeriod(index) },
-                    shape = MaterialTheme.shapes.medium,
+                        .clickable { viewModel.toggleSelection(index) },
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.secondaryContainer
+                        containerColor = if (isSelected)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
+                            MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
                     Box(
@@ -79,44 +84,39 @@ fun FinancialPeriodsScreen(
                         Text(
                             text = label,
                             style = MaterialTheme.typography.bodyLarge,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSecondaryContainer,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSecondaryContainer,
                             textAlign = TextAlign.Center
                         )
                         if (isSelected) {
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp)
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .padding(start = 16.dp)
                             )
                         }
                     }
                 }
             }
 
+            // 6) Botão de excluir aparece só se tiver seleção
             if (selected.isNotEmpty()) {
                 Spacer(Modifier.height(24.dp))
                 Button(
-                    onClick = onDelete,
+                    onClick = { viewModel.deleteSelected() },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Icon(Icons.Default.Delete, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Excluir", color = Color.White)
+                    Text("Excluir", color = MaterialTheme.colorScheme.onError)
                 }
             }
         }
     }
-}
-
-@Preview
-@Composable
-
-fun PreviewFinancialPeriodsScreen() {
-    FinancialPeriodsScreen(
-        periods = listOf("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho"),
-        selected = setOf(1, 3)
-    )
 }

@@ -1,4 +1,3 @@
-// app/src/main/java/com/nate/autofinance/viewmodel/RegisterViewModel.kt
 package com.nate.autofinance.viewmodel
 
 import android.app.Application
@@ -7,10 +6,10 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
-import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.auth.AuthRepository
 import com.nate.autofinance.domain.models.User
 import com.nate.autofinance.utils.SessionManager
+import com.nate.autofinance.ServiceLocator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -24,17 +23,21 @@ sealed class RegisterState {
 
 class RegisterViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val authRepository      = AuthRepository()
-    private val userRepository      = ServiceLocator.userRepository
-    private val createDefaultPeriod = ServiceLocator.createDefaultPeriodUseCase
+    private val authRepository = AuthRepository()
+    private val userRepository = ServiceLocator.userRepository
+    private val createDefaultPeriodUseCase = ServiceLocator.createDefaultPeriodUseCase
+    private val appContext = application
 
     private val _state = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _state
 
-    private val appContext = application
-
     @RequiresApi(Build.VERSION_CODES.O)
-    fun register(name: String, email: String, password: String, confirmPassword: String) {
+    fun register(
+        name: String,
+        email: String,
+        password: String,
+        confirmPassword: String
+    ) {
         if (name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
             _state.value = RegisterState.Error("Preencha todos os campos!")
             return
@@ -55,7 +58,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                     ?: throw IllegalStateException("Falha ao criar usuário local")
 
                 SessionManager.saveUserId(appContext, localUserId.toInt())
-                createDefaultPeriod(localUserId.toInt())
+                createDefaultPeriodUseCase()
 
                 _state.value = RegisterState.Success(firebaseUser)
             } catch (e: Exception) {
@@ -64,7 +67,5 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun resetState() {
-        _state.value = RegisterState.Idle
-    }
+    fun resetState() { _state.value = RegisterState.Idle }
 }

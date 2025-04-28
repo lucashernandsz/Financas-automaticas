@@ -19,7 +19,7 @@ import com.nate.autofinance.ui.screens.settings.*
 import com.nate.autofinance.ui.screens.settings.appSettings.AppSettingsScreen
 import com.nate.autofinance.ui.screens.settings.financialPeriods.FinancialPeriodsScreen
 import com.nate.autofinance.ui.screens.settings.info.PersonalInfoScreen
-import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.StartNewPeriodScreen
+import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.NewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
 import com.nate.autofinance.ui.theme.AutofinanceTheme
 import com.nate.autofinance.viewmodel.*
@@ -147,5 +147,40 @@ fun MainApp(
                 }
             )
         }
+
+        // --- SETTINGS MENU ---
+        composable("settings") {
+            SettingsMenuScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToProfile = { /* implementar se necessário */ },
+                onNavigateToAppSettings = { navController.navigate("appSettings") },
+                onNavigateToCategories = { /* implementar se necessário */ },
+                onNavigateToNotifications = { /* implementar se necessário */ },
+                onNavigateToPremium = { navController.navigate("Subscription") },
+                onNavigateToNewFinancialPeriod = { navController.navigate("NewFinancialPeriod") },
+                onNavigateToFinancialPeriods = { navController.navigate("FinancialPeriods") }
+            )
+        }
+
+        composable("Subscription") {
+            SubscriptionScreen(
+                onBack = { navController.popBackStack() },
+                onStartTrial = { /* implementar se necessário */ }
+            )
+        }
+
+        composable("NewFinancialPeriod") {
+            NewPeriodScreen(
+                onBack = { navController.popBackStack() },
+                onStartPeriod = {}
+            )
+        }
+
+        composable("FinancialPeriods") {
+            FinancialPeriodsScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+
     }
 }

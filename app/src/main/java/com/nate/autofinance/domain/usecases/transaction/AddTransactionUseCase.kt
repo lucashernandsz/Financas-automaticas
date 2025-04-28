@@ -36,7 +36,8 @@ class AddTransactionUseCase(
             financialPeriodId = period.id,
             category = category,
             amount = amount,
-            date = transaction.date
+            date = transaction.date,
+            firebaseDocFinancialPeriodId = period.firebaseDocId
         )
 
         transactionRepo.addTransaction(tx)                                              // :contentReference[oaicite:6]{index=6}&#8203;:contentReference[oaicite:7]{index=7}

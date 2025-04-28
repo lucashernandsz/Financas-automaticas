@@ -7,7 +7,12 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.ServiceLocator
@@ -16,6 +21,7 @@ import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 sealed class LoginState {
     object Idle    : LoginState()
@@ -43,16 +49,41 @@ class LoginViewModel(
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             try {
+                // 1. Autentica no FirebaseAuth
                 val firebaseUser = authRepository.loginUser(email, password)
                     ?: throw IllegalStateException("Falha na autenticação")
-                val localUser = userRepository.getOrCreateUser(firebaseUser)
-                SessionManager.saveUserId(appContext, localUser.id.toInt())
 
-                val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                // 2. Cria ou obtém o usuário local, já com firebaseDocId
+                val localUser = userRepository.getOrCreateUser(firebaseUser)
+                SessionManager.saveUserId(appContext, localUser.id)
+
+                // 3. Sincronização imediata (sem WorkManager)
+                ServiceLocator.syncManager.syncAll()
+
+                // 4. Agenda um trabalho periódico de sync (a cada 1h, só com rede)
+                val periodicSync = PeriodicWorkRequestBuilder<SyncWorker>(1, TimeUnit.HOURS)
+                    .setConstraints(
+                        Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build()
+                    )
                     .build()
-                WorkManager
-                    .getInstance(appContext)
-                    .enqueue(syncRequest)
+
+                WorkManager.getInstance(appContext)
+                    .enqueueUniquePeriodicWork(
+                        /* uniqueName */ "auto_sync",
+                        ExistingPeriodicWorkPolicy.KEEP,
+                        periodicSync
+                    )
+
+                // 5. (Opcional) um one-time sem nome duplicado
+                val immediateSync = OneTimeWorkRequestBuilder<SyncWorker>().build()
+                WorkManager.getInstance(appContext)
+                    .enqueueUniqueWork(
+                        /* uniqueName */ "immediate_sync",
+                        ExistingWorkPolicy.REPLACE,
+                        immediateSync
+                    )
 
                 _loginState.value = LoginState.Success(firebaseUser)
             } catch (e: Exception) {

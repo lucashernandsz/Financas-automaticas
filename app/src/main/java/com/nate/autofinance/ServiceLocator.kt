@@ -1,8 +1,9 @@
-// app/src/main/java/com/nate/autofinance/ServiceLocator.kt
 package com.nate.autofinance
 
 import FetchTransactionsForSelectedPeriodUseCase
 import SyncManager
+import android.annotation.SuppressLint
+import android.content.Context
 import com.nate.autofinance.data.local.AppDatabase
 import com.nate.autofinance.data.remote.FirebasePeriodService
 import com.nate.autofinance.data.remote.FirebaseTransactionService
@@ -10,15 +11,14 @@ import com.nate.autofinance.data.remote.FirebaseUserService
 import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.data.repository.TransactionRepository
 import com.nate.autofinance.data.repository.UserRepository
-import com.nate.autofinance.domain.usecases.period.CreateDefaultPeriodUseCase
-import com.nate.autofinance.domain.usecases.period.CreateNewPeriodUseCase
+import com.nate.autofinance.domain.usecases.period.*
 import com.nate.autofinance.domain.usecases.transaction.*
 import com.nate.autofinance.utils.SessionManager
-import kotlin.getValue
 
+@SuppressLint("StaticFieldLeak")
 object ServiceLocator {
-    // pega o contexto da aplicação
-    private val context = AutoFinanceApp.instance
+    private val context: Context = AutoFinanceApp.instance
+    private val sessionManager: SessionManager = SessionManager
 
     // Room
     private val database by lazy { AppDatabase.getDatabase(context) }
@@ -38,20 +38,45 @@ object ServiceLocator {
     val periodRepository by lazy {
         PeriodRepository(financialPeriodDao, periodService)
     }
-
     val userRepository by lazy {
-        UserRepository(
-            userDao = userDao,
-            firebaseUserService = userService,
-        )
+        UserRepository(userDao, userService)
     }
 
     // Use cases: períodos
     val createDefaultPeriodUseCase by lazy {
-        CreateDefaultPeriodUseCase(periodRepository)
+        CreateDefaultPeriodUseCase(
+            periodRepository,
+            sessionManager,
+            context
+        )
     }
     val createNewPeriodUseCase by lazy {
-        CreateNewPeriodUseCase(periodRepository)
+        CreateNewPeriodUseCase(
+            periodRepository,
+            sessionManager,
+            context
+        )
+    }
+    val getAllPeriodsForUserUseCase by lazy {
+        GetAllPeriodsForUserUseCase(
+            periodRepository,
+            sessionManager,
+            context
+        )
+    }
+    val selectPeriodUseCase by lazy {
+        SelectPeriodUseCase(
+            periodRepository,
+            sessionManager,
+            context
+        )
+    }
+    val deletePeriodsUseCase by lazy {
+        DeletePeriodsUseCase(
+            periodRepository,
+            sessionManager,
+            context
+        )
     }
 
     // Use cases: transações
@@ -59,19 +84,22 @@ object ServiceLocator {
         FetchTransactionsForSelectedPeriodUseCase(
             periodRepository,
             transactionRepository,
-            SessionManager,
+            sessionManager,
             context
         )
     }
     val getTransactionByIdUseCase by lazy {
-        GetTransactionByIdUseCase(transactionRepository)
+        GetTransactionByIdUseCase(
+            transactionRepository,
+            sessionManager,
+            context
+        )
     }
-
     val addTransactionUseCase by lazy {
         AddTransactionUseCase(
             transactionRepository,
             periodRepository,
-            SessionManager,
+            sessionManager,
             context
         )
     }
@@ -79,15 +107,14 @@ object ServiceLocator {
         EditTransactionUseCase(
             transactionRepository,
             periodRepository,
-            SessionManager,
+            sessionManager,
             context
         )
     }
     val deleteTransactionUseCase by lazy {
         DeleteTransactionUseCase(
             transactionRepository,
-            periodRepository,
-            SessionManager,
+            sessionManager,
             context
         )
     }
@@ -99,7 +126,7 @@ object ServiceLocator {
             userRepo   = userRepository,
             txDao      = transactionDao,
             periodDao  = financialPeriodDao,
-            session    = SessionManager,
+            session    = sessionManager,
             context    = context
         )
     }

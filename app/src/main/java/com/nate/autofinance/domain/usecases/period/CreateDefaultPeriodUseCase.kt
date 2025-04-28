@@ -1,10 +1,12 @@
 // CreateDefaultPeriodUseCase.kt
 package com.nate.autofinance.domain.usecases.period
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.utils.toDate
 import java.time.LocalDate
 
@@ -13,10 +15,15 @@ import java.time.LocalDate
  * Marca este período como selecionado.
  */
 class CreateDefaultPeriodUseCase(
-    private val periodRepository: PeriodRepository
+    private val periodRepository: PeriodRepository,
+    private val session: SessionManager,
+    private val context: Context
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend operator fun invoke(userId: Int?) {
+    suspend operator fun invoke() {
+        val userId = session.getUserId(context)
+            ?: throw IllegalStateException("Nenhum usuário logado")
+
         val existing = periodRepository.getFinancialPeriodsForUser(userId)
         if (existing.isNotEmpty()) return
 
@@ -30,7 +37,7 @@ class CreateDefaultPeriodUseCase(
             userId = userId
         )
 
-        // 3) Persiste local + remoto via repository
         periodRepository.addFinancialPeriod(defaultPeriod)
     }
 }
+
