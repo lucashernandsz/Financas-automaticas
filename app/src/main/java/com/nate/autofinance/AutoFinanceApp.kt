@@ -9,6 +9,8 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.nate.autofinance.ServiceLocator
 import java.util.concurrent.TimeUnit
 
@@ -24,6 +26,12 @@ class AutoFinanceApp : Application() {
         instance = this
 
         FirebaseApp.initializeApp(this)
+
+        FirebaseFirestore.getInstance().apply {
+            firestoreSettings = FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true)
+                .build()
+        }
 
         ServiceLocator.apply {
             userRepository

@@ -57,34 +57,6 @@ class LoginViewModel(
                 val localUser = userRepository.getOrCreateUser(firebaseUser)
                 SessionManager.saveUserId(appContext, localUser.id)
 
-                // 3. Sincronização imediata (sem WorkManager)
-                ServiceLocator.syncManager.syncAll()
-
-                // 4. Agenda um trabalho periódico de sync (a cada 1h, só com rede)
-                val periodicSync = PeriodicWorkRequestBuilder<SyncWorker>(1, TimeUnit.HOURS)
-                    .setConstraints(
-                        Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build()
-                    )
-                    .build()
-
-                WorkManager.getInstance(appContext)
-                    .enqueueUniquePeriodicWork(
-                        /* uniqueName */ "auto_sync",
-                        ExistingPeriodicWorkPolicy.KEEP,
-                        periodicSync
-                    )
-
-                // 5. (Opcional) um one-time sem nome duplicado
-                val immediateSync = OneTimeWorkRequestBuilder<SyncWorker>().build()
-                WorkManager.getInstance(appContext)
-                    .enqueueUniqueWork(
-                        /* uniqueName */ "immediate_sync",
-                        ExistingWorkPolicy.REPLACE,
-                        immediateSync
-                    )
-
                 _loginState.value = LoginState.Success(firebaseUser)
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error(e.message ?: "Erro desconhecido")
