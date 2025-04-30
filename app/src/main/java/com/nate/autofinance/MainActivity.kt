@@ -155,17 +155,23 @@ fun MainApp(
                 onNavigateToProfile = { /* implementar se necessário */ },
                 onNavigateToAppSettings = { navController.navigate("appSettings") },
                 onNavigateToCategories = { /* implementar se necessário */ },
-                onNavigateToNotifications = { /* implementar se necessário */ },
+                onNavigateToNotifications = { navController.navigate("notifications") },
                 onNavigateToPremium = { navController.navigate("Subscription") },
                 onNavigateToNewFinancialPeriod = { navController.navigate("NewFinancialPeriod") },
                 onNavigateToFinancialPeriods = { navController.navigate("FinancialPeriods") }
+            )
+        }
+        
+        composable("notifications") {
+            NotificationImportSettingsScreen(
+                onBack = { navController.popBackStack() },
+                onSubscribe = {},
             )
         }
 
         composable("Subscription") {
             SubscriptionScreen(
                 onBack = { navController.popBackStack() },
-                onStartTrial = { /* implementar se necessário */ }
             )
         }
 

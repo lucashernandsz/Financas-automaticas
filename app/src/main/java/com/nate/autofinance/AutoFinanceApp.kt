@@ -3,6 +3,10 @@ package com.nate.autofinance
 
 import SyncWorker
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -21,6 +25,7 @@ class AutoFinanceApp : Application() {
             private set
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -46,8 +51,17 @@ class AutoFinanceApp : Application() {
             addTransactionUseCase
             editTransactionUseCase
             deleteTransactionUseCase
+            toggleSubscriptionUseCase
 
         }
+
+        val channel = NotificationChannel(
+            "autofinance_channel",
+            "AutoFinance Ativo",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        getSystemService(NotificationManager::class.java)
+            .createNotificationChannel(channel)
 
         val syncReq = PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES)
             .setConstraints(

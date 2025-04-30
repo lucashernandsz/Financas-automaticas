@@ -12,6 +12,7 @@ import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.data.repository.TransactionRepository
 import com.nate.autofinance.data.repository.UserRepository
 import com.nate.autofinance.domain.usecases.period.*
+import com.nate.autofinance.domain.usecases.subscription.ToggleSubscriptionUseCase
 import com.nate.autofinance.domain.usecases.transaction.*
 import com.nate.autofinance.utils.SessionManager
 
@@ -118,6 +119,16 @@ object ServiceLocator {
             context
         )
     }
+
+    val toggleSubscriptionUseCase by lazy{
+        ToggleSubscriptionUseCase(
+            userRepository,
+            sessionManager,
+            context
+        )
+    }
+
+
 
     val syncManager by lazy {
         SyncManager(

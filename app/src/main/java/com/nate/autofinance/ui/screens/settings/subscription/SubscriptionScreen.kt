@@ -1,43 +1,37 @@
 package com.nate.autofinance.ui.screens.settings.subscription
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import android.app.Application
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Text
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Alignment
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
+import com.nate.autofinance.ui.viewmodel.SubscriptionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SubscriptionScreen(
-    monthlyPrice: String = "R\$10.00",
-    annualPrice: String = "R\$3.99",
-    onBack: () -> Unit = {},
-    onStartTrial: () -> Unit = {},
-) {
+fun SubscriptionScreen(onBack: () -> Unit) {
+    // 1) Pega o Application
+    val app = LocalContext.current.applicationContext as Application
+
+    // 2) Cria o ViewModel
+    val vm: SubscriptionViewModel = viewModel(
+        modelClass = SubscriptionViewModel::class.java,
+        factory = AndroidViewModelFactory.getInstance(app)
+    )
+
+    // 3) Lê o estado
+    val isPremium by vm.isSubscribed.collectAsState()
+
+    // 4) UI com o ViewModel “dentro”
     Scaffold(
         topBar = {
             AppTopBarPageTitle(
@@ -60,78 +54,26 @@ fun SubscriptionScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-            Text(
-                text = "Com nossa tecnologia, conseguimos automatizar o processo de inserção e categorização de todas suas transações",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            listOf(
-                "Categorização automática de transações",
-                "Inserção automática de transações",
-                "Categorias ilimitadas"
-            ).forEach { feature ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(feature, style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Monthly plan card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(containerColor = Color.Black)
-            ) {
-                Column(Modifier.padding(24.dp)) {
-                    Text("Mensal", style = MaterialTheme.typography.labelLarge, color = Color.White)
-                    Text(
-                        text = "$monthlyPrice /month",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = Color.White
-                    )
-                }
-            }
-
-            // Annual plan card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(Modifier.padding(24.dp)) {
-                    Text("Anual (R\$47.88)", style = MaterialTheme.typography.labelLarge)
-                    Text(
-                        text = "$annualPrice /month",
-                        style = MaterialTheme.typography.displaySmall
-                    )
-                }
-            }
+            // ... demais textos/cards/features ...
 
             Spacer(Modifier.weight(1f))
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = onStartTrial,
+                    onClick = { vm.activatePremium { onBack() } },
                     modifier = Modifier.weight(1f),
+                    enabled = !isPremium,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
                     shape = MaterialTheme.shapes.medium
                 ) {
                     Icon(Icons.Default.Star, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Start 7‑day free trial", color = Color.White)
+                    Text(
+                        if (isPremium) "Premium Ativado" else "Ativar Premium",
+                        color = Color.White
+                    )
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SubscriptionScreenPreview() {
-    SubscriptionScreen()
 }
