@@ -7,28 +7,23 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// 1) Define o DataStore de Preferences no Context
-private val Context.dataStore by preferencesDataStore(name = "settings")
+// 1) Delegate para DataStore de Preferences
+private val Context.dataStore by preferencesDataStore("settings")
 
-// 2) Chaves usadas nas Preferences
 object SettingsPreferences {
-    val NOTIFICATION_IMPORT_ENABLED = booleanPreferencesKey("notification_import_enabled")
+    val NOTIF_IMPORT_ENABLED = booleanPreferencesKey("notification_import_enabled")
 }
 
-// 3) Repository para ler/escrever a configuração de importação de notificações
 class SettingsRepository(private val context: Context) {
-
-    // Fluxo que emite true/false conforme o usuário habilitou ou não
+    // 2) Fluxo que emite o valor salvo (default = false)
     val notificationImportEnabled: Flow<Boolean> =
         context.dataStore.data
-            .map { prefs ->
-                prefs[SettingsPreferences.NOTIFICATION_IMPORT_ENABLED] ?: false
-            }
+            .map { prefs -> prefs[SettingsPreferences.NOTIF_IMPORT_ENABLED] ?: false }
 
-    // Grava a preferência (habilitar/desabilitar)
+    // 3) Grava a preferência
     suspend fun setNotificationImportEnabled(enabled: Boolean) {
         context.dataStore.edit { prefs ->
-            prefs[SettingsPreferences.NOTIFICATION_IMPORT_ENABLED] = enabled
+            prefs[SettingsPreferences.NOTIF_IMPORT_ENABLED] = enabled
         }
     }
 }

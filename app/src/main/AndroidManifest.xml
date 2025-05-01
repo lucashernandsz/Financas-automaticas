@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nate.autofinance">
 
-    <!-- Permissão genérica para todos os Foreground Services -->
+    <!-- Permissões para Foreground Service e notificações -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- Necessária para usar android:foregroundServiceType="dataSync" -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".AutoFinanceApp"
@@ -27,7 +27,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Serviço que escuta notificações bancárias -->
         <service
             android:name=".service.BankNotificationListener"
             android:exported="false"

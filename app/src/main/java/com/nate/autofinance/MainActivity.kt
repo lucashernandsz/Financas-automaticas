@@ -152,8 +152,6 @@ fun MainApp(
         composable("settings") {
             SettingsMenuScreen(
                 onBack = { navController.popBackStack() },
-                onNavigateToProfile = { /* implementar se necessário */ },
-                onNavigateToAppSettings = { navController.navigate("appSettings") },
                 onNavigateToCategories = { /* implementar se necessário */ },
                 onNavigateToNotifications = { navController.navigate("notifications") },
                 onNavigateToPremium = { navController.navigate("Subscription") },
@@ -161,11 +159,11 @@ fun MainApp(
                 onNavigateToFinancialPeriods = { navController.navigate("FinancialPeriods") }
             )
         }
-        
+
         composable("notifications") {
             NotificationImportSettingsScreen(
                 onBack = { navController.popBackStack() },
-                onSubscribe = {},
+                onSubscribe = {}
             )
         }
 

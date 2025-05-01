@@ -40,7 +40,7 @@ class BankNotificationListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-        // Se a leitura estiver habilitada, transforma em foreground
+        Log.d("BankNotifListener", "=== Listener CONNECTED === enabledImport=$enabledImport")
         if (enabledImport) {
             val notif = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("AutoFinance ativo")
@@ -54,6 +54,7 @@ class BankNotificationListener : NotificationListenerService() {
 
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
+        Log.d("BankNotifListener", "=== Listener DISCONNECTED ===")
         // Sai do modo foreground e remove notificação
         stopForeground(true)
     }
