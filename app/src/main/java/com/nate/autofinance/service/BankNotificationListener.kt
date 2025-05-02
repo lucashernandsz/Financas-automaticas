@@ -7,12 +7,17 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.repository.SettingsRepository
+import com.nate.autofinance.domain.models.Transaction
+import com.nate.autofinance.utils.Categories
+import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.Date
 
 class BankNotificationListener : NotificationListenerService() {
 
@@ -59,6 +64,7 @@ class BankNotificationListener : NotificationListenerService() {
         stopForeground(true)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (!enabledImport) return
 
@@ -70,15 +76,64 @@ class BankNotificationListener : NotificationListenerService() {
         Log.d("BankNotifListener", "Recebeu notificação: pacote=$pkg, texto=$text")
 
         // Filtra por pacotes de bancos conhecidos
-        if (pkg.contains("nubank", true) || pkg.contains("itau", true)) {
+        if (pkg.contains("nubank", true) || pkg.contains("itau", true) || pkg.contains("inter", true) || pkg.contains("autofinance", true)) {
             processBankNotification(text)
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun processBankNotification(text: String) {
-        // TODO: implemente seu pipeline de parsing, classificação,
-        // criação de Transaction e chame o AddTransactionUseCase
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // 1) Pega o valor (ex: "R$ 1.234,56")
+                val raw = Regex("""R\$ ?([\d.,]+)""")
+                    .find(text)
+                    ?.groupValues
+                    ?.get(1)
+                    ?: return@launch
+
+                val value = raw
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .toDoubleOrNull()
+                    ?: return@launch
+
+                // 2) Define sinal (positivo = crédito, negativo = débito)
+                val amount = if (text.contains("crédito", true)
+                    || text.contains("recebido", true)
+                ) value else -value
+
+                // 3) Pega o usuário logado
+                val userId = SessionManager
+                    .getUserId(applicationContext)
+                    ?: return@launch
+
+                // 4) Encontra (ou cria) o período ativo desse usuário
+                val periodRepo = ServiceLocator.periodRepository
+                var period = periodRepo.getSelectedPeriodForUser(userId)
+                if (period == null) {
+                    ServiceLocator.createDefaultPeriodUseCase.invoke()
+                    period = periodRepo.getSelectedPeriodForUser(userId)
+                }
+
+                // 5) Cria e salva a transação na categoria “Other”
+                val tx = Transaction(
+                    date = Date(),
+                    amount = amount,
+                    description = "Notificação importada",
+                    category = Categories.OTHER,
+                    userId = userId,
+                    financialPeriodId = period!!.id,
+                    imported = true
+                )
+                ServiceLocator.addTransactionUseCase.invoke(tx)
+
+            } catch (e: Exception) {
+                Log.e("BankNotifListener", "Erro ao processar notificação", e)
+            }
+        }
     }
+
 
     private fun createNotificationChannel() {
         // Apenas em Android O (API 26) ou superior
