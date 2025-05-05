@@ -16,6 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Autofinance">
 
+        <!-- MainActivity agora é a entrypoint do app -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
