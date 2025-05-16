@@ -16,11 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Autofinance">
 
-        <!-- MainActivity agora é a entrypoint do app -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Autofinance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
