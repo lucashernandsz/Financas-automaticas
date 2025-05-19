@@ -8,7 +8,6 @@ import androidx.room.Query
 import androidx.room.Update
 import com.nate.autofinance.domain.models.SyncStatus
 import com.nate.autofinance.domain.models.Transaction
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {

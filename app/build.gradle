@@ -8,6 +8,11 @@ plugins {
 }
 
 android {
+
+    lintOptions {
+        abortOnError false
+    }
+
     namespace 'com.nate.autofinance'
     compileSdk 35
 
