@@ -20,7 +20,7 @@ android {
 
         signingConfigs{
             create("release") {
-                storeFile file("C:\\Users\\lucas\\AndroidStudioProjects\\autofinance\\my-release-key.jks")
+                storeFile file("$rootDir/my-release-key.jks")
                 storePassword "!code:projetotrump"
                 keyAlias "auto-finance-key"
                 keyPassword "!code:projetotrump"
