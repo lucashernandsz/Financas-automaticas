@@ -24,6 +24,8 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+      - name: Garantir permissão do Gradle Wrapper
+        run: chmod +x gradlew
       - name: Rodar testes unitários
         run: ./gradlew testDebugUnitTest
       - name: Executar lint estático
