@@ -103,8 +103,8 @@ jobs:
           ./gradlew bundleRelease \
             -Pandroid.injected.signing.store.file=my-release-key.jks \
             -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
-            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
-            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+            -Pandroid.injected.signing.store.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.store.key.password=$KEY_PASSWORD
 
       - name: Publicar Release AAB
         uses: actions/upload-artifact@v4
