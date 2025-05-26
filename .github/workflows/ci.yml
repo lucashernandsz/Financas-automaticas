@@ -128,7 +128,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-release.aab
-          path: app-release.aab
+          path: .
 
       - name: Upload para Google Play (Internal track)
         uses: r0adkll/upload-google-play@v1
