@@ -27,6 +27,7 @@ import java.util.*
 @Composable
 fun AddTransactionScreen(
     viewModel: AddTransactionViewModel = viewModel(),            // injeta o VM
+    initialCategory: String = Categories.INCOME, // categoria inicial
     onBack: () -> Unit = {},
     onSaveSuccess: () -> Unit = {}                               // callback após salvar
 ) {
@@ -35,7 +36,7 @@ fun AddTransactionScreen(
     // Campos de input
     var amount by remember { mutableStateOf("") }
     var dateText by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf(Categories.INCOME) }
+    var selectedCategory by remember { mutableStateOf(initialCategory) }
     var description by remember { mutableStateOf("") }
 
     // preenche a data atual

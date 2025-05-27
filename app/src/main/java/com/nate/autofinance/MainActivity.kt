@@ -32,6 +32,7 @@ import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.NewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
 import com.nate.autofinance.ui.screens.transactionList.editTransaction.EditTransactionScreen
+import com.nate.autofinance.utils.Categories
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,9 +136,11 @@ fun AutoFinanceApp(
                     viewModel = txVm,
                     onDashboardClick = { /* ... */ },
                     onTransactionsClick = { /* ... */ },
-                    onAddTransactionClick = { navController.navigate("addTransaction") },
+                    onAddTransactionClick = { category ->
+                        navController.navigate("addTransaction/$category")
+                    },
                     onSettingsClick = { navController.navigate("settings") },
-                    onTransactionClick = { tx: Transaction ->
+                    onTransactionClick = { tx ->
                         navController.navigate("editTransaction/${tx.id}")
                     }
                 )
@@ -164,15 +167,19 @@ fun AutoFinanceApp(
                 }
             }
 
-            composable("addTransaction") {
-                val addVm: AddTransactionViewModel = viewModel()
+            composable(
+                "addTransaction/{initialCategory}",
+                arguments = listOf(navArgument("initialCategory") {
+                    type = NavType.StringType
+                    defaultValue = Categories.INCOME
+                })
+            ) { backStack ->
+                val initialCategory = backStack.arguments?.getString("initialCategory")
+                    ?: Categories.INCOME
                 AddTransactionScreen(
-                    viewModel = addVm,
+                    initialCategory = initialCategory,
                     onBack = { navController.popBackStack() },
-                    onSaveSuccess = {
-                        addVm.resetState()
-                        navController.popBackStack()
-                    }
+                    onSaveSuccess = { navController.popBackStack() }
                 )
             }
 

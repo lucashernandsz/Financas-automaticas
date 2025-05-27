@@ -30,7 +30,7 @@ fun TransactionListScreen(
     viewModel: TransactionViewModel,
     onDashboardClick: () -> Unit = {},
     onTransactionsClick: () -> Unit = {},
-    onAddTransactionClick: () -> Unit = {},
+    onAddTransactionClick: (String) -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onTransactionClick: (Transaction) -> Unit = {}
 ) {
@@ -95,7 +95,7 @@ fun TransactionListScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Button(
-                    onClick = onAddTransactionClick,
+                    onClick = {onAddTransactionClick(selectedCategory)},
                     shape = MaterialTheme.shapes.small
                 ) {
                     Text(text = "+ Inserir")
