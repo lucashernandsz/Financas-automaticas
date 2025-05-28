@@ -1,76 +1,114 @@
 package com.nate.autofinance.data.remote
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.nate.autofinance.domain.models.SyncStatus
+import com.google.firebase.firestore.SetOptions
 import com.nate.autofinance.domain.models.User
+import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.data.local.UserDao
+import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.tasks.await
 
 /**
- * Serviço responsável pelas operações de persistência dos dados de usuários no Firestore.
+ * Serviço responsável pelas operações de persistência dos dados de usuários no Firestore,
+ * utilizando sempre o FirebaseAuth UID como ID do documento.
  */
 class FirebaseUserService(
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val userDao: UserDao,
+    private val session: SessionManager
 ) {
     private val usersCollection = firestore.collection("users")
 
     /**
-     * Adiciona um novo usuário na coleção "users" do Firestore.
-     * Cria um mapa com os campos relevantes (não incluímos firebaseDocId, pois o Firebase gerará o ID).
-     *
-     * @param user Instância de [User] com os dados a serem salvos.
-     * @return O ID do documento criado, ou null se a operação falhar.
+     * Recupera ou cria o registro no Firestore, sempre com documentId = Auth UID.
+     * @return o Auth‐UID do usuário.
      */
-    suspend fun addUser(user: User): String? {
-        val userMap = hashMapOf(
-            "name" to user.name,
-            "email" to user.email,
-            "syncStatus" to SyncStatus.SYNCED.name,
-            "isSubscribed" to user.isSubscribed,
+    suspend fun getOrCreateUser(context: Context): String {
+        // 1) Pega o UID do FirebaseAuth (único e consistente)
+        val authUid = FirebaseAuth
+            .getInstance()
+            .currentUser
+            ?.uid
+            ?: throw IllegalStateException("Nenhum usuário autenticado")
 
+        // 2) Busca dados locais para enviar à nuvem
+        val localUser = userDao.getUserById(session.getUserId(context)!!)
+            ?: throw IllegalStateException("Usuário local não encontrado")
+
+        // 3) Monta o mapa de campos que quer armazenar/atualizar
+        val userMap = mapOf(
+            "name"         to localUser.name,
+            "email"        to localUser.email,
+            "syncStatus"   to SyncStatus.SYNCED.name,
+            "isSubscribed" to localUser.isSubscribed
         )
-        val documentRef = usersCollection.add(userMap).await()
-        return documentRef.id
+
+        // 4) Grava (ou atualiza) o documento com ID = authUid
+        usersCollection
+            .document(authUid)
+            .set(userMap, SetOptions.merge())
+            .await()
+
+        // 5) Atualiza o campo firebaseDocId no banco local
+        userDao.update(
+            localUser.copy(firebaseDocId = authUid, syncStatus = SyncStatus.SYNCED)
+        )
+
+        return authUid
     }
 
     /**
-     * Atualiza os dados de um usuário existente com base no ID do documento.
-     *
-     * @param documentId O identificador do documento no Firestore.
-     * @param updatedData Um mapa contendo os campos a serem atualizados.
+     * Atualiza campos específicos do usuário no Firestore.
+     * @param updatedData mapa de pares campo→valor a atualizar.
      */
-    suspend fun updateUser(documentId: String, updatedData: Map<String, Any>) {
-        usersCollection.document(documentId).update(updatedData).await()
+    suspend fun updateUser(updatedData: Map<String, Any>) {
+        val authUid = FirebaseAuth.getInstance().currentUser!!.uid
+        usersCollection
+            .document(authUid)
+            .set(updatedData, SetOptions.merge())
+            .await()
     }
 
     /**
-     * Remove um usuário da coleção com base no ID do documento.
-     *
-     * @param documentId O identificador do documento a ser removido.
+     * Remove o registro do usuário no Firestore usando o Auth‐UID.
      */
-    suspend fun deleteUser(documentId: String) {
-        usersCollection.document(documentId).delete().await()
+    suspend fun deleteUser() {
+        val authUid = FirebaseAuth.getInstance().currentUser!!.uid
+        usersCollection
+            .document(authUid)
+            .delete()
+            .await()
     }
 
     /**
-     * Busca e retorna um usuário com base no email fornecido.
-     * Caso o usuário seja encontrado, atualiza o campo firebaseDocId com o ID do documento.
-     *
-     * @param email O email a ser pesquisado.
-     * @return Uma instância de [User], ou null se não houver correspondência.
+     * Busca um usuário por e-mail na nuvem e alinha o firebaseDocId local.
      */
     suspend fun getUserByEmail(email: String): User? {
-        val querySnapshot = usersCollection.whereEqualTo("email", email).get().await()
-        val document = querySnapshot.documents.firstOrNull()
-        val user = document?.toObject(User::class.java)
-        if (user != null) {
-            user.firebaseDocId = document.id
-        }
+        val query = usersCollection
+            .whereEqualTo("email", email)
+            .get()
+            .await()
+
+        val doc = query.documents.firstOrNull() ?: return null
+        val user = doc.toObject(User::class.java)!!
+        user.firebaseDocId = doc.id
         return user
     }
 
-    suspend fun getUserById(id: String): User? {
-        val document = usersCollection.document(id).get().await()
-        return document.toObject(User::class.java)
+    /**
+     * Lê diretamente o documento cujo ID é o Auth‐UID.
+     */
+    suspend fun getUserById(): User? {
+        val authUid = FirebaseAuth.getInstance().currentUser!!.uid
+        val docSnap = usersCollection
+            .document(authUid)
+            .get()
+            .await()
+
+        val user = docSnap.toObject(User::class.java)
+        user?.firebaseDocId = authUid
+        return user
     }
 }
