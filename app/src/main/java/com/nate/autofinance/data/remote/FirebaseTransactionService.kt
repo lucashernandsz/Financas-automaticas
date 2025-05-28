@@ -2,53 +2,78 @@ package com.nate.autofinance.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.nate.autofinance.domain.models.SyncStatus
 import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Serviço responsável pelas operações de persistência de transações no Firestore,
+ * usando sempre o FirebaseAuth UID como identificador de usuário.
+ */
 class FirebaseTransactionService(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
     private val transactionsCollection = firestore.collection("transactions")
 
-    // Adiciona uma nova transação na coleção e retorna o ID do documento criado.
-    suspend fun addTransaction(transaction: Transaction): String? {
-        val currentUid = FirebaseAuth.getInstance().currentUser
+    /**
+     * Adiciona uma nova transação ao Firestore e retorna o ID do documento criado.
+     * Usa o Auth-UID em "firebaseDocUserId" e o remote periodId em "firebaseDocFinancialPeriodId".
+     */
+    suspend fun addTransaction(tx: Transaction): String {
+        val authUid = FirebaseAuth.getInstance().currentUser
             ?.uid
             ?: throw IllegalStateException("Nenhum usuário autenticado")
-        // Inclui o syncStatus no mapa (convertido para String)
-        val transactionMap = hashMapOf(
-            "date" to transaction.date,
-            "amount" to transaction.amount,
-            "description" to transaction.description,
-            "category" to transaction.category,
-            "userId" to transaction.userId,
-            "financialPeriodId" to transaction.financialPeriodId,
-            "imported" to transaction.imported,
-            "syncStatus" to SyncStatus.SYNCED.name,
-            "firebaseDocFinancialPeriodId" to transaction.firebaseDocFinancialPeriodId,
-            "firebaseDocUserId" to currentUid,
+
+        val txMap = hashMapOf(
+            "date"                         to tx.date,
+            "amount"                       to tx.amount,
+            "description"                  to tx.description,
+            "category"                     to tx.category,
+            "imported"                     to tx.imported,
+            "syncStatus"                   to tx.syncStatus.name,
+            "firebaseDocUserId"            to authUid,
+            // usa o campo que já contém o docId do período remoto
+            "firebaseDocFinancialPeriodId" to (tx.firebaseDocFinancialPeriodId ?: "")
         )
-        val documentRef = transactionsCollection.add(transactionMap).await()
-        return documentRef.id
+
+        val docRef = transactionsCollection.add(txMap).await()
+        return docRef.id
     }
 
-    // Atualiza os campos de uma transação existente a partir de um map com os dados atualizados.
-    suspend fun updateTransaction(transactionId: String, updatedData: Map<String, Any>) {
-        transactionsCollection.document(transactionId).update(updatedData).await()
+    /**
+     * Atualiza campos específicos da transação existente.
+     * @param documentId ID do documento no Firestore.
+     * @param updatedData pares campo→valor a atualizar.
+     */
+    suspend fun updateTransaction(documentId: String, updatedData: Map<String, Any>) {
+        transactionsCollection
+            .document(documentId)
+            .update(updatedData)
+            .await()
     }
 
-    // Exclui uma transação com base no ID do documento.
-    suspend fun deleteTransaction(transactionId: String) {
-        transactionsCollection.document(transactionId).delete().await()
+    /**
+     * Remove a transação no Firestore dado o seu documentId.
+     */
+    suspend fun deleteTransaction(documentId: String) {
+        transactionsCollection
+            .document(documentId)
+            .delete()
+            .await()
     }
 
-    // Busca e retorna a lista de transações associadas a um determinado usuário.
-    suspend fun getTransactionsForUser(firebaseUid: String): List<Transaction> {
+    /**
+     * Busca todas as transações deste usuário (Auth-UID).
+     */
+    suspend fun getTransactionsForUser(): List<Transaction> {
+        val authUid = FirebaseAuth.getInstance().currentUser
+            ?.uid
+            ?: throw IllegalStateException("Nenhum usuário autenticado")
+
         return transactionsCollection
-            .whereEqualTo("firebaseDocUserId", firebaseUid)  // ← novo
-            .get().await()
+            .whereEqualTo("firebaseDocUserId", authUid)
+            .get()
+            .await()
             .map { it.toObject(Transaction::class.java) }
     }
 }
