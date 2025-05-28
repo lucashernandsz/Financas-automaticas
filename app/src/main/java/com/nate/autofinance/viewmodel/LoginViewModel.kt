@@ -41,7 +41,6 @@ class LoginViewModel(
     val loginState: StateFlow<LoginState> = _loginState
 
     private val userRepository      = ServiceLocator.userRepository
-    private val createDefaultPeriod = ServiceLocator.createDefaultPeriodUseCase
     private val appContext = getApplication<Application>()
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -58,6 +57,22 @@ class LoginViewModel(
                 SessionManager.saveUserId(appContext, localUser.id)
 
                 _loginState.value = LoginState.Success(firebaseUser)
+
+                val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                    .setConstraints(
+                        Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build()
+                    )
+                    .build()
+
+                WorkManager
+                    .getInstance(appContext)
+                    .enqueueUniqueWork(
+                        "initial_sync",
+                        ExistingWorkPolicy.REPLACE,
+                        syncRequest
+                    )
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error(e.message ?: "Erro desconhecido")
             }
