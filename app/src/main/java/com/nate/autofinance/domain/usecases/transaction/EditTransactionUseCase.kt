@@ -30,10 +30,17 @@ class EditTransactionUseCase(
         else
             Categories.OTHER
 
+        val adjustedAmount = when {
+            category != Categories.INCOME && transaction.amount > 0 -> -transaction.amount
+            category == Categories.INCOME && transaction.amount < 0 -> -transaction.amount
+            else -> transaction.amount
+        }
+
         val tx = transaction.copy(
             userId            = userId,
             financialPeriodId = period.id,
-            category          = category
+            category          = category,
+            amount            = adjustedAmount,
         )
 
         transactionRepo.updateTransaction(tx)                                           // :contentReference[oaicite:8]{index=8}&#8203;:contentReference[oaicite:9]{index=9}
