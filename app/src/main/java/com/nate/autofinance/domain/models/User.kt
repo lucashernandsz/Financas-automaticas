@@ -13,7 +13,7 @@ data class User(
     val isSubscribed: Boolean = false,
     var firebaseDocId: String? = null
 ) {
-    /** Construtor sem argumentos exigido pelo Firestore via reflexão */
+    /** Construtor sem argumentos exigido pelo Firestore via refxlexão */
     @Suppress("unused")
     constructor() : this(
         id             = 0,
