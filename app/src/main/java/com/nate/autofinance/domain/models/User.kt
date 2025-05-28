@@ -12,4 +12,15 @@ data class User(
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val isSubscribed: Boolean = false,
     var firebaseDocId: String? = null
-)
+) {
+    /** Construtor sem argumentos exigido pelo Firestore via reflexão */
+    @Suppress("unused")
+    constructor() : this(
+        id             = 0,
+        name           = "",
+        email          = "",
+        syncStatus     = SyncStatus.PENDING,
+        isSubscribed   = false,
+        firebaseDocId  = null
+    )
+}

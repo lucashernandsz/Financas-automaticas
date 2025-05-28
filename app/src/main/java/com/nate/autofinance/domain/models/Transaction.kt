@@ -25,11 +25,28 @@ data class Transaction(
     val amount: Double,
     val description: String,
     val category: String,
-    val userId: Int? = null,             // Se necessário; você pode remover se a associação for indireta via FinancialPeriod
-    val financialPeriodId: Int,          // Não nulo: cada transação deve pertencer a um período
+    val userId: Int? = null,
+    val financialPeriodId: Int,
     val imported: Boolean = false,
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val firebaseDocFinancialPeriodId: String? = null,
     val firebaseDocUserId: String? = null,
     var firebaseDocId: String? = null
-)
+) {
+    /** Construtor sem argumentos exigido pelo Firestore via reflexão */
+    @Suppress("unused")
+    constructor() : this(
+        id                         = 0,
+        date                       = Date(),
+        amount                     = 0.0,
+        description                = "",
+        category                   = "",
+        userId                     = null,
+        financialPeriodId          = 0,
+        imported                   = false,
+        syncStatus                 = SyncStatus.PENDING,
+        firebaseDocFinancialPeriodId = null,
+        firebaseDocUserId          = null,
+        firebaseDocId              = null
+    )
+}
