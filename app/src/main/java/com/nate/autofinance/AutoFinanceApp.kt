@@ -1,7 +1,6 @@
 // app/src/main/java/com/nate/autofinance/AutoFinanceApp.kt
 package com.nate.autofinance
 
-import SyncWorker
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -16,6 +15,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.nate.autofinance.ServiceLocator
+import com.nate.autofinance.data.sync.SyncWorker
 import java.util.concurrent.TimeUnit
 
 class AutoFinanceApp : Application() {

@@ -35,6 +35,9 @@ interface FinancialPeriodDao {
     @Query("SELECT * FROM financial_period WHERE syncStatus != :synced")
     suspend fun getPendingPeriods(synced: SyncStatus = SyncStatus.SYNCED): List<FinancialPeriod>
 
+    @Query("SELECT * FROM financial_period WHERE firebaseDocId = :docId")
+    suspend fun getPeriodByFirebaseDocId(docId: String): FinancialPeriod?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(periods: List<FinancialPeriod>)
 

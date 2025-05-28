@@ -15,7 +15,6 @@ import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.viewmodel.TransactionViewModel
-import java.util.*
 
 // Formata valor em estilo brasileiro, ex: "1.500,00"
 fun Double.toBrazilianCurrency(): String =
@@ -27,23 +26,19 @@ fun Double.toBrazilianCurrency(): String =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
-    viewModel: TransactionViewModel,
+    viewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
     onDashboardClick: () -> Unit = {},
     onTransactionsClick: () -> Unit = {},
     onAddTransactionClick: (String) -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onTransactionClick: (Transaction) -> Unit = {}
 ) {
-    // 1) Observa categorias, filtro e transações do ViewModel
-    val categories by viewModel.categories.collectAsState()            // :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
+    // 1) Observa categorias, filtro e transações diretamente do ViewModel
+    val categories by viewModel.categories.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val transactions by viewModel.filteredTransactions.collectAsState()
 
-    // 2) Carrega transações ao montar a tela
-    LaunchedEffect(Unit) {
-        viewModel.loadTransactions()                                    // :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
-    }
-
+    // 2) Calcula total
     val total = transactions.sumOf { it.amount }
 
     Scaffold(
@@ -63,14 +58,14 @@ fun TransactionListScreen(
         ) {
             // 3) Filtro de categorias
             CategoryFilterRow(
-                categories = listOf("All") + Categories.fixedCategories,
+                categories = categories,
                 selectedCategory = selectedCategory,
                 onCategorySelected = viewModel::setCategoryFilter
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 4) Lista de transações
+            // 4) Lista de transações, que se atualiza automaticamente
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(transactions) { tx ->
                     TransactionItemCard(
@@ -95,7 +90,7 @@ fun TransactionListScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Button(
-                    onClick = {onAddTransactionClick(selectedCategory)},
+                    onClick = { onAddTransactionClick(selectedCategory) },
                     shape = MaterialTheme.shapes.small
                 ) {
                     Text(text = "+ Inserir")

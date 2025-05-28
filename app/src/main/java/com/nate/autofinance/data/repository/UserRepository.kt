@@ -52,7 +52,7 @@ class UserRepository(
     suspend fun getOrCreateUser(firebaseUser: FirebaseUser): User = withContext(ioDispatcher) {
         userDao.getUserByEmail(firebaseUser.email!!)?.let { return@withContext it }
 
-        val remoteUser = firebaseUserService.getUserById(firebaseUser.uid.toString())
+        val remoteUser = firebaseUserService.getUserById()
 
         val toInsert = (remoteUser
             ?.copy(syncStatus = SyncStatus.SYNCED)
@@ -82,7 +82,7 @@ class UserRepository(
             )
             // Se o firebaseDocId existir, atualiza o documento remoto
             if (user.firebaseDocId != null) {
-                firebaseUserService.updateUser(user.firebaseDocId!!, updatedData)
+                firebaseUserService.updateUser(updatedData)
                 Log.i(TAG, "User updated in Firebase for id: ${user.firebaseDocId}")
                 val updatedUser = user.copy(syncStatus = SyncStatus.SYNCED)
                 userDao.update(updatedUser)
@@ -108,7 +108,7 @@ class UserRepository(
         userDao.delete(user)
         try {
             user.firebaseDocId?.let { docId ->
-                firebaseUserService.deleteUser(docId)
+                firebaseUserService.deleteUser()
                 Log.i(TAG, "User deleted from Firebase for id: $docId")
             }
         } catch (ex: Exception) {

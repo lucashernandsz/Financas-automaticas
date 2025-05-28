@@ -1,7 +1,6 @@
 // app/src/main/java/com/nate/autofinance/viewmodel/LoginViewModel.kt
 package com.nate.autofinance.viewmodel
 
-import SyncWorker
 import android.app.Application
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -17,6 +16,7 @@ import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.auth.AuthRepository
+import com.nate.autofinance.data.sync.SyncWorker
 import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

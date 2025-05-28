@@ -1,4 +1,3 @@
-// app/src/main/java/com/nate/autofinance/viewmodel/TransactionViewModel.kt
 package com.nate.autofinance.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -11,39 +10,51 @@ import kotlinx.coroutines.launch
 
 class TransactionViewModel : ViewModel() {
 
-    // pega o use case do ServiceLocator
-    private val fetchTransactionsForSelectedPeriod =
-        ServiceLocator.fetchTransactionsForSelectedPeriodUseCase
+    private val repo = ServiceLocator.transactionRepository
+    private val session = ServiceLocator.sessionManager
+    private val ctx     = ServiceLocator.context
 
+    // 1) Flow que pega o selectedPeriodId ou null
+    private val selectedPeriodIdFlow: Flow<Int?> = flow {
+        emit(session.getSelectedPeriodId(ctx))
+    }
+
+    // 2) Flow reativo de transações, vazio se não houver período
+    private val transactionsFlow: Flow<List<Transaction>> =
+        selectedPeriodIdFlow.flatMapLatest { periodId ->
+            periodId?.let { repo.observeTransactions(it) }
+                ?: flowOf(emptyList())
+        }
+
+    // 3) StateFlow para a UI consumir
+    val transactions: StateFlow<List<Transaction>> =
+        transactionsFlow.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    // 4) Categorias disponíveis e filtro
     private val _categories = MutableStateFlow(listOf("All") + Categories.fixedCategories)
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
-    private val _transactions = MutableStateFlow<List<Transaction>>(emptyList())
-
-    // combina lista + filtro
+    // 5) Lista filtrada por categoria
     val filteredTransactions: StateFlow<List<Transaction>> =
-        combine(_transactions, _selectedCategory) { txs, cat ->
-            when (cat) {
-                "All" -> txs
-                Categories.INCOME -> txs.filter { it.category == Categories.INCOME }
-                else -> txs.filter { it.category == cat }
+        combine(transactions, selectedCategory) { txs, cat ->
+            when {
+                cat == "All"             -> txs
+                cat == Categories.INCOME -> txs.filter { it.category == Categories.INCOME }
+                else                     -> txs.filter { it.category == cat }
             }
         }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
-
-    /** Carrega as transações do período ativo do usuário */
-    fun loadTransactions() {
-        viewModelScope.launch {
-            _transactions.value = try {
-                fetchTransactionsForSelectedPeriod()
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
-    }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
     /** Atualiza o filtro de categoria */
     fun setCategoryFilter(category: String) {

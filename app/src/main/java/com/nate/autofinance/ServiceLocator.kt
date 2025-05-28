@@ -1,9 +1,9 @@
 package com.nate.autofinance
 
 import FetchTransactionsForSelectedPeriodUseCase
-import SyncManager
 import android.annotation.SuppressLint
 import android.content.Context
+import com.google.firebase.firestore.FirebaseFirestore
 import com.nate.autofinance.data.local.AppDatabase
 import com.nate.autofinance.data.remote.FirebasePeriodService
 import com.nate.autofinance.data.remote.FirebaseTransactionService
@@ -11,6 +11,7 @@ import com.nate.autofinance.data.remote.FirebaseUserService
 import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.data.repository.TransactionRepository
 import com.nate.autofinance.data.repository.UserRepository
+import com.nate.autofinance.data.sync.SyncManager
 import com.nate.autofinance.domain.usecases.period.*
 import com.nate.autofinance.domain.usecases.subscription.ToggleSubscriptionUseCase
 import com.nate.autofinance.domain.usecases.transaction.*
@@ -18,8 +19,8 @@ import com.nate.autofinance.utils.SessionManager
 
 @SuppressLint("StaticFieldLeak")
 object ServiceLocator {
-    private val context: Context = AutoFinanceApp.instance
-    private val sessionManager: SessionManager = SessionManager
+    val context: Context = AutoFinanceApp.instance
+    val sessionManager: SessionManager = SessionManager
 
     // Room
     private val database by lazy { AppDatabase.getDatabase(context) }
@@ -30,7 +31,10 @@ object ServiceLocator {
     // Firebase
     private val transactionService by lazy { FirebaseTransactionService() }
     private val periodService by lazy { FirebasePeriodService() }
-    private val userService by lazy { FirebaseUserService() }
+    private val userService by lazy { FirebaseUserService(
+        session = sessionManager,
+        userDao = userDao
+    ) }
 
     // Repositórios
     val transactionRepository by lazy {
@@ -132,13 +136,10 @@ object ServiceLocator {
 
     val syncManager by lazy {
         SyncManager(
-            txRepo     = transactionRepository,
-            periodRepo = periodRepository,
-            userRepo   = userRepository,
-            txDao      = transactionDao,
-            periodDao  = financialPeriodDao,
-            session    = sessionManager,
-            context    = context
+            periodDao = financialPeriodDao,
+            txDao = transactionDao,
+            session = sessionManager,
+            context = context
         )
     }
 }

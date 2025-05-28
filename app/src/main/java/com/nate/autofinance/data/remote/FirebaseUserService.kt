@@ -59,6 +59,33 @@ class FirebaseUserService(
         return authUid
     }
 
+    suspend fun addUser(user: User): String {
+        // 1) obtém o UID atual do FirebaseAuth
+        val authUid = FirebaseAuth
+            .getInstance()
+            .currentUser
+            ?.uid
+            ?: throw IllegalStateException("Nenhum usuário autenticado")
+
+        // 2) monta o mapa de campos que vão para a nuvem
+        val userMap = hashMapOf(
+            "name"         to user.name,
+            "email"        to user.email,
+            "syncStatus"   to user.syncStatus.name,
+            "isSubscribed" to user.isSubscribed
+        )
+
+        // 3) grava (ou atualiza) o documento com ID = authUid
+        firestore
+            .collection("users")
+            .document(authUid)
+            .set(userMap, SetOptions.merge())
+            .await()
+
+        // 4) devolve o UID para que o repository atualize o Room
+        return authUid
+    }
+
     /**
      * Atualiza campos específicos do usuário no Firestore.
      * @param updatedData mapa de pares campo→valor a atualizar.

@@ -102,8 +102,8 @@ class PeriodRepository(
         periodDao.getPeriodsByUserId(userId)
     }
 
-    suspend fun fetchRemotePeriods(firebaseUserId: String): List<FinancialPeriod> = withContext(ioDispatcher) {
-        firebasePeriodService.getFinancialPeriodsForUser(firebaseUserId)
+    suspend fun fetchRemotePeriods(): List<FinancialPeriod> = withContext(ioDispatcher) {
+        firebasePeriodService.getFinancialPeriodsForUser()
     }
 
 }

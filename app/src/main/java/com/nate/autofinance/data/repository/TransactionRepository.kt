@@ -7,6 +7,7 @@ import com.nate.autofinance.domain.models.SyncStatus
 import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class TransactionRepository(
@@ -107,7 +108,10 @@ class TransactionRepository(
         transactionDao.getTransactionById(id)
     }
 
-    suspend fun fetchRemoteTransactions(firebaseUserId: String): List<Transaction> = withContext(ioDispatcher) {
-        firebaseTransactionService.getTransactionsForUser(firebaseUserId)
+    suspend fun fetchRemoteTransactions(): List<Transaction> = withContext(ioDispatcher) {
+        firebaseTransactionService.getTransactionsForUser()
     }
+
+    fun observeTransactions(periodId: Int): Flow<List<Transaction>> =
+        transactionDao.observeTransactionsByPeriodId(periodId)
 }

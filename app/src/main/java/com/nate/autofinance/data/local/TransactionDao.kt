@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.nate.autofinance.domain.models.SyncStatus
 import com.nate.autofinance.domain.models.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
@@ -32,5 +33,13 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(transactions: List<Transaction>)
 
+    @Query("""
+      SELECT * 
+      FROM `transaction`
+      WHERE financialPeriodId = :financialPeriodId
+      ORDER BY date DESC
+    """)
+    fun observeTransactionsByPeriodId(financialPeriodId: Int): Flow<List<Transaction>>
 }
+
 
