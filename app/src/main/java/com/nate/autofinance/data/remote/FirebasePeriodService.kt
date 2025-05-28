@@ -2,67 +2,49 @@ package com.nate.autofinance.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.nate.autofinance.domain.models.FinancialPeriod
 import kotlinx.coroutines.tasks.await
 
 class FirebasePeriodService(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
-
     private val periodsCollection = firestore.collection("financialPeriods")
 
-    /**
-     * Adiciona um novo período ao Firestore e devolve o ID do documento criado.
-     * Usa o Auth-UID como chave em "firebaseDocUserId".
-     */
     suspend fun addFinancialPeriod(period: FinancialPeriod): String {
-        val authUid = FirebaseAuth.getInstance().currentUser
-            ?.uid
-            ?: throw IllegalStateException("Nenhum usuário autenticado")
-
+        val authUid = FirebaseAuth.getInstance().currentUser!!.uid
         val periodMap = hashMapOf(
             "startDate"          to period.startDate,
             "endDate"            to period.endDate,
             "isSelected"         to period.isSelected,
             "totalIncome"        to period.totalIncome,
             "totalExpenses"      to period.totalExpenses,
-            // removido "userId" local: não mais necessário
             "syncStatus"         to period.syncStatus.name,
             "firebaseDocUserId"  to authUid
         )
-
-        val documentRef = periodsCollection.add(periodMap).await()  // gera ID próprio
-        return documentRef.id
+        return periodsCollection.add(periodMap).await().id
     }
 
     /**
-     * Atualiza campos do período existente, usando o documentId retornado em addFinancialPeriod().
+     * Agora recebe Map<String, Any?> e faz set+merge,
+     * eliminando o conflito de Map<K,V> vs Map<String,Any>.
      */
-    suspend fun updateFinancialPeriod(documentId: String, updatedData: Map<String, Any>) {
+    suspend fun updateFinancialPeriod(
+        documentId: String,
+        updatedData: Map<String, Any?>
+    ) {
         periodsCollection
             .document(documentId)
-            .update(updatedData)
+            .set(updatedData, SetOptions.merge())
             .await()
     }
 
-    /**
-     * Exclui o período com base no seu ID de documento.
-     */
     suspend fun deleteFinancialPeriod(documentId: String) {
-        periodsCollection
-            .document(documentId)
-            .delete()
-            .await()
+        periodsCollection.document(documentId).delete().await()
     }
 
-    /**
-     * Busca todos os períodos desse usuário (Auth-UID).
-     */
     suspend fun getFinancialPeriodsForUser(): List<FinancialPeriod> {
-        val authUid = FirebaseAuth.getInstance().currentUser
-            ?.uid
-            ?: throw IllegalStateException("Nenhum usuário autenticado")
-
+        val authUid = FirebaseAuth.getInstance().currentUser!!.uid
         return periodsCollection
             .whereEqualTo("firebaseDocUserId", authUid)
             .get()
