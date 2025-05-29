@@ -1,3 +1,6 @@
+// TransactionViewModel.kt
+// Fonte: :contentReference[oaicite:1]{index=1}
+
 package com.nate.autofinance.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -14,19 +17,19 @@ class TransactionViewModel : ViewModel() {
     private val session = ServiceLocator.sessionManager
     private val ctx     = ServiceLocator.context
 
-    // 1) Flow que pega o selectedPeriodId ou null
+    // 1) Fluxo simples que emite o período selecionado (pode ser null)
     private val selectedPeriodIdFlow: Flow<Int?> = flow {
         emit(session.getSelectedPeriodId(ctx))
     }
 
-    // 2) Flow reativo de transações, vazio se não houver período
+    // 2) Em cada mudança de período, troca para o fluxo de transações reativo
     private val transactionsFlow: Flow<List<Transaction>> =
         selectedPeriodIdFlow.flatMapLatest { periodId ->
             periodId?.let { repo.observeTransactions(it) }
                 ?: flowOf(emptyList())
         }
 
-    // 3) StateFlow para a UI consumir
+    // 3) Transforma em StateFlow para a UI consumir
     val transactions: StateFlow<List<Transaction>> =
         transactionsFlow.stateIn(
             scope = viewModelScope,
@@ -34,14 +37,13 @@ class TransactionViewModel : ViewModel() {
             initialValue = emptyList()
         )
 
-    // 4) Categorias disponíveis e filtro
+    // —— filtros de categoria (mantidos igual ao original) ——
     private val _categories = MutableStateFlow(listOf("All") + Categories.fixedCategories)
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
-    // 5) Lista filtrada por categoria
     val filteredTransactions: StateFlow<List<Transaction>> =
         combine(transactions, selectedCategory) { txs, cat ->
             when {
@@ -50,13 +52,9 @@ class TransactionViewModel : ViewModel() {
                 else                     -> txs.filter { it.category == cat }
             }
         }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /** Atualiza o filtro de categoria */
+    /** Atualiza filtro de categoria */
     fun setCategoryFilter(category: String) {
         if (_categories.value.contains(category)) {
             _selectedCategory.value = category
