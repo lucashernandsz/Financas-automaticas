@@ -16,15 +16,17 @@ class AddTransactionUseCase(
 ) {
     suspend operator fun invoke(transaction: Transaction) {
         val userId = session.getUserId(context)
-            ?: throw IllegalStateException("Nenhum usuário logado")                    // :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
+            ?: throw IllegalStateException("Nenhum usuário logado")
 
         val period = periodRepo.getSelectedPeriodForUser(userId)
-            ?: throw IllegalStateException("Nenhum período ativo")                     // :contentReference[oaicite:2]{index=2}&#8203;:contentReference[oaicite:3]{index=3}
+            ?: throw IllegalStateException("Nenhum período ativo")
+
+        println("AddTransactionUseCase: Adicionando transação para período ${period.id}")
 
         val category = if (Categories.fixedCategories.contains(transaction.category))
             transaction.category
         else
-            Categories.OTHER                                                            // :contentReference[oaicite:4]{index=4}&#8203;:contentReference[oaicite:5]{index=5}
+            Categories.OTHER
 
         val amount = if (category != Categories.INCOME && transaction.amount > 0)
             -transaction.amount
@@ -40,6 +42,12 @@ class AddTransactionUseCase(
             firebaseDocFinancialPeriodId = period.firebaseDocId
         )
 
-        transactionRepo.addTransaction(tx)                                              // :contentReference[oaicite:6]{index=6}&#8203;:contentReference[oaicite:7]{index=7}
+        // Adiciona a transação
+        transactionRepo.addTransaction(tx)
+
+        // Garante que o período selecionado está correto no SessionManager
+        session.saveSelectedPeriodId(context, period.id)
+
+        println("AddTransactionUseCase: Transação adicionada com sucesso para período ${period.id}")
     }
 }

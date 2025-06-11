@@ -18,5 +18,8 @@ class SelectPeriodUseCase(
             val updated = it.copy(isSelected = (it.id == periodId))
             periodRepository.updateFinancialPeriod(updated)
         }
+
+        // Atualiza o SessionManager para notificar observers
+        session.saveSelectedPeriodId(context, periodId)
     }
 }

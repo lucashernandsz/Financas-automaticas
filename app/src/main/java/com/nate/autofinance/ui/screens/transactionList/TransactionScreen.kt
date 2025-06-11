@@ -41,6 +41,16 @@ fun TransactionListScreen(
     // 2) Calcula total
     val total = transactions.sumOf { it.amount }
 
+    // 3) Força refresh quando a composable é recomposta
+    LaunchedEffect(Unit) {
+        viewModel.refreshPeriod()
+    }
+
+    // 4) Debug: mostra quantas transações temos
+    LaunchedEffect(transactions) {
+        println("TransactionListScreen: Renderizando ${transactions.size} transações")
+    }
+
     Scaffold(
         topBar = {
             AppTopBarPageTitle(
@@ -56,7 +66,7 @@ fun TransactionListScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // 3) Filtro de categorias
+            // 5) Filtro de categorias
             CategoryFilterRow(
                 categories = categories,
                 selectedCategory = selectedCategory,
@@ -65,20 +75,36 @@ fun TransactionListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 4) Lista de transações, que se atualiza automaticamente
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                items(transactions) { tx ->
-                    TransactionItemCard(
-                        transaction = tx,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onTransactionClick(tx) }
+            // 6) Mostra estado vazio se não há transações
+            if (transactions.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Text(
+                        text = "Nenhuma transação encontrada",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            } else {
+                // 7) Lista de transações, que se atualiza automaticamente
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(transactions, key = { it.id }) { tx ->
+                        TransactionItemCard(
+                            transaction = tx,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onTransactionClick(tx) }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
 
-            // 5) Total e botão de adicionar
+            // 8) Total e botão de adicionar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

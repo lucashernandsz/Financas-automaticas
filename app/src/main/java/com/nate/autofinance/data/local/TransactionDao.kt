@@ -12,34 +12,36 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
-    @Insert
-    suspend fun insert(transaction: Transaction): Long
 
-    @Update
-    suspend fun update(transaction: Transaction): Int
+    // ✅ REATIVO: Esta query emite automaticamente quando há mudanças na tabela
+    @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :periodId ORDER BY date DESC")
+    fun observeTransactionsByPeriod(periodId: Int): Flow<List<Transaction>>
 
-    @Delete
-    suspend fun delete(transaction: Transaction): Int
+    // ✅ REATIVO: Observa transações pendentes de sincronização
+    @Query("SELECT * FROM `transaction` WHERE syncStatus = 'PENDING'")
+    fun observePendingTransactions(): Flow<List<Transaction>>
+
+    // Queries tradicionais (não reativas) para casos específicos
+    @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :periodId ORDER BY date DESC")
+    suspend fun getTransactionsByPeriod(periodId: Int): List<Transaction>
+
+    @Query("SELECT * FROM `transaction` WHERE syncStatus = 'PENDING'")
+    suspend fun getPendingTransactions(): List<Transaction>
 
     @Query("SELECT * FROM `transaction` WHERE id = :id")
     suspend fun getTransactionById(id: Int): Transaction?
 
-    @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :financialPeriodId")
-    suspend fun getTransactionsByFinancialPeriodId(financialPeriodId: Int): List<Transaction>
-
-    @Query("SELECT * FROM `transaction` WHERE syncStatus != :synced")
-    suspend fun getPendingTransactions(synced: SyncStatus = SyncStatus.SYNCED): List<Transaction>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(transaction: Transaction): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(transactions: List<Transaction>)
 
-    @Query("""
-      SELECT * 
-      FROM `transaction`
-      WHERE financialPeriodId = :financialPeriodId
-      ORDER BY date DESC
-    """)
-    fun observeTransactionsByPeriodId(financialPeriodId: Int): Flow<List<Transaction>>
+    @Update
+    suspend fun update(transaction: Transaction)
+
+    @Delete
+    suspend fun delete(transaction: Transaction)
 }
 
 

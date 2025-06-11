@@ -1,6 +1,4 @@
 // TransactionViewModel.kt
-// Fonte: :contentReference[oaicite:1]{index=1}
-
 package com.nate.autofinance.viewmodel
 
 import androidx.lifecycle.ViewModel
@@ -15,21 +13,31 @@ class TransactionViewModel : ViewModel() {
 
     private val repo = ServiceLocator.transactionRepository
     private val session = ServiceLocator.sessionManager
-    private val ctx     = ServiceLocator.context
+    private val ctx = ServiceLocator.context
 
-    // 1) Fluxo simples que emite o período selecionado (pode ser null)
-    private val selectedPeriodIdFlow: Flow<Int?> = flow {
-        emit(session.getSelectedPeriodId(ctx))
-    }
+    // 1) StateFlow interno para controlar o período selecionado
+    private val _selectedPeriodId = MutableStateFlow<Int?>(null)
 
-    // 2) Em cada mudança de período, troca para o fluxo de transações reativo
+    // 2) Combina o StateFlow interno com mudanças do SessionManager
+    private val selectedPeriodIdFlow: StateFlow<Int?> =
+        combine(_selectedPeriodId, session.selectedPeriodIdFlow) { internal, session ->
+            session ?: internal
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
+
+    // 3) Em cada mudança de período, troca para o fluxo de transações reativo
     private val transactionsFlow: Flow<List<Transaction>> =
         selectedPeriodIdFlow.flatMapLatest { periodId ->
-            periodId?.let { repo.observeTransactions(it) }
-                ?: flowOf(emptyList())
+            periodId?.let {
+                println("TransactionViewModel: Observando transações para período $it")
+                repo.observeTransactions(it)
+            } ?: flowOf(emptyList())
         }
 
-    // 3) Transforma em StateFlow para a UI consumir
+    // 4) Transforma em StateFlow para a UI consumir
     val transactions: StateFlow<List<Transaction>> =
         transactionsFlow.stateIn(
             scope = viewModelScope,
@@ -37,7 +45,7 @@ class TransactionViewModel : ViewModel() {
             initialValue = emptyList()
         )
 
-    // —— filtros de categoria (mantidos igual ao original) ——
+    // —— filtros de categoria ——
     private val _categories = MutableStateFlow(listOf("All") + Categories.fixedCategories)
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
 
@@ -46,18 +54,46 @@ class TransactionViewModel : ViewModel() {
 
     val filteredTransactions: StateFlow<List<Transaction>> =
         combine(transactions, selectedCategory) { txs, cat ->
+            println("TransactionViewModel: Filtrando ${txs.size} transações para categoria '$cat'")
             when {
-                cat == "All"             -> txs
+                cat == "All" -> txs
                 cat == Categories.INCOME -> txs.filter { it.category == Categories.INCOME }
-                else                     -> txs.filter { it.category == cat }
+                else -> txs.filter { it.category == cat }
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    init {
+        // Carrega período selecionado na inicialização
+        loadSelectedPeriod()
+
+        // Observa mudanças no período através do SessionManager
+        viewModelScope.launch {
+            session.selectedPeriodIdFlow.collect { periodId ->
+                if (periodId != null && periodId != _selectedPeriodId.value) {
+                    println("TransactionViewModel: Período selecionado mudou para $periodId")
+                    _selectedPeriodId.value = periodId
+                }
             }
         }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    }
+
+    private fun loadSelectedPeriod() {
+        viewModelScope.launch {
+            val periodId = session.getSelectedPeriodId(ctx)
+            println("TransactionViewModel: Carregando período selecionado: $periodId")
+            _selectedPeriodId.value = periodId
+        }
+    }
 
     /** Atualiza filtro de categoria */
     fun setCategoryFilter(category: String) {
         if (_categories.value.contains(category)) {
             _selectedCategory.value = category
         }
+    }
+
+    /** Força reload do período selecionado */
+    fun refreshPeriod() {
+        loadSelectedPeriod()
     }
 }

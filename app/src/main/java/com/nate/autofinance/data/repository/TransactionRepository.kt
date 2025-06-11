@@ -1,6 +1,4 @@
 // TransactionRepository.kt
-// Fonte: :contentReference[oaicite:0]{index=0}
-
 package com.nate.autofinance.data.repository
 
 import android.util.Log
@@ -11,6 +9,7 @@ import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
 class TransactionRepository(
@@ -25,7 +24,11 @@ class TransactionRepository(
 
     /** Insere no Room e tenta enviar ao Firebase, marcando status adequado. */
     suspend fun addTransaction(transaction: Transaction) = withContext(ioDispatcher) {
+        println("$TAG: Inserindo transação: ${transaction.description} para período ${transaction.financialPeriodId}")
+
         val localId = transactionDao.insert(transaction)
+        println("$TAG: Transação inserida no Room com ID: $localId")
+
         try {
             val firebaseDocId = firebaseTransactionService.addTransaction(transaction)
             if (firebaseDocId != null) {
@@ -36,11 +39,13 @@ class TransactionRepository(
                     syncStatus = SyncStatus.SYNCED
                 )
                 transactionDao.update(updated)
+                println("$TAG: Transação sincronizada com Firebase: $firebaseDocId")
             }
         } catch (ex: Exception) {
             Log.e(TAG, "Error sending transaction to Firebase", ex)
             val failed = transaction.copy(id = localId.toInt(), syncStatus = SyncStatus.FAILED)
             transactionDao.update(failed)
+            println("$TAG: Erro ao sincronizar com Firebase: ${ex.message}")
         }
     }
 
@@ -84,7 +89,9 @@ class TransactionRepository(
 
     /** Query direta (síncrona) para uso pontual. */
     suspend fun getTransactionsByPeriodId(periodId: Int): List<Transaction> = withContext(ioDispatcher) {
-        transactionDao.getTransactionsByFinancialPeriodId(periodId)
+        val transactions = transactionDao.getTransactionsByFinancialPeriodId(periodId)
+        println("$TAG: Buscando transações para período $periodId: ${transactions.size} encontradas")
+        return@withContext transactions
     }
 
     /** Busca transação por ID. */
@@ -98,6 +105,11 @@ class TransactionRepository(
     }
 
     /** **Fluxo reativo**: emite nova lista sempre que o Room detectar mudanças. */
-    fun observeTransactions(periodId: Int): Flow<List<Transaction>> =
-        transactionDao.observeTransactionsByPeriodId(periodId)
+    fun observeTransactions(periodId: Int): Flow<List<Transaction>> {
+        println("$TAG: Iniciando observação de transações para período $periodId")
+        return transactionDao.observeTransactionsByPeriodId(periodId)
+            .onEach { transactions ->
+                println("$TAG: Fluxo emitiu ${transactions.size} transações para período $periodId")
+            }
+    }
 }
