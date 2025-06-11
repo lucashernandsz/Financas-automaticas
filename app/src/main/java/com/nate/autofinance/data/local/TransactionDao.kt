@@ -15,21 +15,28 @@ interface TransactionDao {
 
     // ✅ REATIVO: Esta query emite automaticamente quando há mudanças na tabela
     @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :periodId ORDER BY date DESC")
-    fun observeTransactionsByPeriod(periodId: Int): Flow<List<Transaction>>
+    fun observeTransactionsByPeriodId(periodId: Int): Flow<List<Transaction>>
 
     // ✅ REATIVO: Observa transações pendentes de sincronização
     @Query("SELECT * FROM `transaction` WHERE syncStatus = 'PENDING'")
     fun observePendingTransactions(): Flow<List<Transaction>>
 
+    // ✅ REATIVO: Observa todas as transações de um usuário
+    @Query("SELECT * FROM `transaction` WHERE userId = :userId ORDER BY date DESC")
+    fun observeTransactionsByUserId(userId: Int): Flow<List<Transaction>>
+
     // Queries tradicionais (não reativas) para casos específicos
     @Query("SELECT * FROM `transaction` WHERE financialPeriodId = :periodId ORDER BY date DESC")
-    suspend fun getTransactionsByPeriod(periodId: Int): List<Transaction>
+    suspend fun getTransactionsByFinancialPeriodId(periodId: Int): List<Transaction>
 
     @Query("SELECT * FROM `transaction` WHERE syncStatus = 'PENDING'")
     suspend fun getPendingTransactions(): List<Transaction>
 
     @Query("SELECT * FROM `transaction` WHERE id = :id")
     suspend fun getTransactionById(id: Int): Transaction?
+
+    @Query("SELECT * FROM `transaction` WHERE userId = :userId ORDER BY date DESC")
+    suspend fun getTransactionsByUserId(userId: Int): List<Transaction>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(transaction: Transaction): Long
@@ -42,6 +49,14 @@ interface TransactionDao {
 
     @Delete
     suspend fun delete(transaction: Transaction)
+
+    // Queries auxiliares para estatísticas reativas
+    @Query("SELECT COUNT(*) FROM `transaction` WHERE financialPeriodId = :periodId")
+    fun observeTransactionCount(periodId: Int): Flow<Int>
+
+    @Query("SELECT SUM(amount) FROM `transaction` WHERE financialPeriodId = :periodId AND amount > 0")
+    fun observeTotalIncome(periodId: Int): Flow<Double?>
+
+    @Query("SELECT SUM(amount) FROM `transaction` WHERE financialPeriodId = :periodId AND amount < 0")
+    fun observeTotalExpenses(periodId: Int): Flow<Double?>
 }
-
-

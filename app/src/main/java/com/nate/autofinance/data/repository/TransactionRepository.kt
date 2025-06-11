@@ -9,6 +9,7 @@ import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
@@ -51,7 +52,10 @@ class TransactionRepository(
 
     /** Atualiza local e remoto (se já tiver firebaseDocId). */
     suspend fun updateTransaction(transaction: Transaction) = withContext(ioDispatcher) {
+        println("$TAG: Atualizando transação ID: ${transaction.id}")
+
         transactionDao.update(transaction)
+
         try {
             transaction.firebaseDocId?.let { docId ->
                 val data = mapOf(
@@ -69,21 +73,30 @@ class TransactionRepository(
             }
             val synced = transaction.copy(syncStatus = SyncStatus.SYNCED)
             transactionDao.update(synced)
+            println("$TAG: Transação atualizada com sucesso")
         } catch (ex: Exception) {
             Log.e(TAG, "Error updating transaction in Firebase", ex)
             val failed = transaction.copy(syncStatus = SyncStatus.FAILED)
             transactionDao.update(failed)
+            println("$TAG: Erro ao atualizar transação: ${ex.message}")
         }
     }
 
     /** Exclui localmente e (tenta) excluir no Firebase. */
     suspend fun deleteTransaction(transaction: Transaction) = withContext(ioDispatcher) {
+        println("$TAG: Excluindo transação ID: ${transaction.id}")
+
         transactionDao.delete(transaction)
+
         try {
-            transaction.firebaseDocId?.let { firebaseTransactionService.deleteTransaction(it) }
-            Log.i(TAG, "Transaction deleted from Firebase: ${transaction.firebaseDocId}")
+            transaction.firebaseDocId?.let {
+                firebaseTransactionService.deleteTransaction(it)
+                Log.i(TAG, "Transaction deleted from Firebase: ${transaction.firebaseDocId}")
+            }
+            println("$TAG: Transação excluída com sucesso")
         } catch (ex: Exception) {
             Log.e(TAG, "Error deleting transaction from Firebase", ex)
+            println("$TAG: Erro ao excluir do Firebase: ${ex.message}")
         }
     }
 
@@ -109,7 +122,35 @@ class TransactionRepository(
         println("$TAG: Iniciando observação de transações para período $periodId")
         return transactionDao.observeTransactionsByPeriodId(periodId)
             .onEach { transactions ->
-                println("$TAG: Fluxo emitiu ${transactions.size} transações para período $periodId")
+                println("$TAG: ✅ Fluxo emitiu ${transactions.size} transações para período $periodId")
+                transactions.forEach { tx ->
+                    println("$TAG: - ${tx.description}: ${tx.amount} (${tx.category})")
+                }
+            }
+            .catch { exception ->
+                Log.e(TAG, "Erro no fluxo de transações para período $periodId", exception)
+                println("$TAG: ❌ Erro no fluxo: ${exception.message}")
+            }
+    }
+
+    /** Observa transações por usuário */
+    fun observeTransactionsByUser(userId: Int): Flow<List<Transaction>> {
+        println("$TAG: Iniciando observação de transações para usuário $userId")
+        return transactionDao.observeTransactionsByUserId(userId)
+            .onEach { transactions ->
+                println("$TAG: ✅ Fluxo emitiu ${transactions.size} transações para usuário $userId")
+            }
+            .catch { exception ->
+                Log.e(TAG, "Erro no fluxo de transações para usuário $userId", exception)
+                println("$TAG: ❌ Erro no fluxo: ${exception.message}")
+            }
+    }
+
+    /** Observa transações pendentes de sincronização */
+    fun observePendingTransactions(): Flow<List<Transaction>> {
+        return transactionDao.observePendingTransactions()
+            .onEach { transactions ->
+                println("$TAG: ✅ ${transactions.size} transações pendentes de sincronização")
             }
     }
 }
