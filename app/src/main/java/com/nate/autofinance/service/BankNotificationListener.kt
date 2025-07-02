@@ -120,7 +120,7 @@ class BankNotificationListener : NotificationListenerService() {
                 val tx = Transaction(
                     date = Date(),
                     amount = amount,
-                    description = "Notificação importada",
+                    description = text,
                     category = Categories.OTHER,
                     userId = userId,
                     financialPeriodId = period!!.id,
