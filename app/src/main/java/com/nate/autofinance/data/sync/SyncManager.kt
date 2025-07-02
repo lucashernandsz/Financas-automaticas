@@ -117,7 +117,7 @@ class SyncManager(
             .get().await()
         val remotePeriods = periodSnaps.documents.map { doc ->
             FinancialPeriod(
-                id                = 0,  // let Room autogerar
+                id                = 0,
                 startDate         = doc.getTimestamp("startDate")?.toDate(),
                 endDate           = doc.getTimestamp("endDate")?.toDate(),
                 isSelected        = doc.getBoolean("isSelected") ?: false,
@@ -129,33 +129,51 @@ class SyncManager(
                 firebaseDocId     = doc.id
             )
         }
-        // upsert via REPLACE
-        periodDao.insertAll(remotePeriods)  // :contentReference[oaicite:0]{index=0}
+        // PULL: upsert remote financial periods to avoid duplicates
+        remotePeriods.forEach { period ->
+            val existing = periodDao.getPeriodByFirebaseDocId(period.firebaseDocId!!)
+            if (existing != null) {
+                periodDao.update(period.copy(id = existing.id))
+            } else {
+                periodDao.insert(period.copy(id = 0))
+            }
+        }
 
         // --- 5) PULL: baixa transações remotas; vincula ao período local
         val txSnaps = firestore.collection("transactions")
             .whereEqualTo("firebaseDocUserId", authUid)
             .get().await()
         val remoteTxs = txSnaps.documents.mapNotNull { doc ->
-            val parentId = doc.getString("firebaseDocFinancialPeriodId") ?: return@mapNotNull null
-            val localPeriod = periodDao.getPeriodByFirebaseDocId(parentId)
-                ?: return@mapNotNull null
+             val parentId = doc.getString("firebaseDocFinancialPeriodId") ?: return@mapNotNull null
+             val localPeriod = periodDao.getPeriodByFirebaseDocId(parentId)
+                 ?: return@mapNotNull null
 
-            Transaction(
-                id                           = 0,
-                date                         = doc.getTimestamp("date")!!.toDate(),
-                amount                       = doc.getDouble("amount") ?: 0.0,
-                description                  = doc.getString("description") ?: "",
-                category                     = doc.getString("category") ?: "",
-                userId                       = localUserId,
-                financialPeriodId            = localPeriod.id,
-                imported                     = doc.getBoolean("imported") ?: false,
-                syncStatus                   = SyncStatus.SYNCED,
-                firebaseDocFinancialPeriodId = parentId,
-                firebaseDocUserId            = authUid,
-                firebaseDocId                = doc.id
-            )
+             Transaction(
+                 id                           = 0,
+                 date                         = doc.getTimestamp("date")!!.toDate(),
+                 amount                       = doc.getDouble("amount") ?: 0.0,
+                 description                  = doc.getString("description") ?: "",
+                 category                     = doc.getString("category") ?: "",
+                 userId                       = localUserId,
+                 financialPeriodId            = localPeriod.id,
+                 imported                     = doc.getBoolean("imported") ?: false,
+                 syncStatus                   = SyncStatus.SYNCED,
+                 firebaseDocFinancialPeriodId = parentId,
+                 firebaseDocUserId            = authUid,
+                 firebaseDocId                = doc.id
+             )
+         }
+        // PULL: só insere novos e atualiza existentes para evitar duplicação
+        remoteTxs.forEach { tx ->
+            val docId = tx.firebaseDocId!!
+            val existing = txDao.getTransactionByFirebaseDocId(docId)
+            if (existing != null) {
+                // atualiza dados mantendo o mesmo ID
+                txDao.update(tx.copy(id = existing.id))
+            } else {
+                // insere novo, id auto gerado
+                txDao.insert(tx.copy(id = 0))
+            }
         }
-        txDao.insertAll(remoteTxs)  // :contentReference[oaicite:1]{index=1}
     }
 }

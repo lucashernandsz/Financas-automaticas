@@ -132,6 +132,7 @@ fun AutoFinanceApp(
 
             composable("transactionList") {
                 val txVm: TransactionViewModel = viewModel()
+                // Removed automatic sync here to avoid duplicate inserts on return
                 TransactionListScreen(
                     viewModel = txVm,
                     onDashboardClick = { /* ... */ },

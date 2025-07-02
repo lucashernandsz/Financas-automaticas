@@ -1,6 +1,8 @@
 package com.nate.autofinance.ui.screens.transactionList
 
 import CategoryFilterRow
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +25,7 @@ fun Double.toBrazilianCurrency(): String =
         .replace('.', ',')
         .replace('X', '.')
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
@@ -43,7 +46,8 @@ fun TransactionListScreen(
 
     // 3) Força refresh quando a composable é recomposta
     LaunchedEffect(Unit) {
-        viewModel.refreshPeriod()
+        // Sincroniza períodos e transações antes de renderizar
+        viewModel.refreshTransactions()
     }
 
     // 4) Debug: mostra quantas transações temos
@@ -83,11 +87,7 @@ fun TransactionListScreen(
                         .fillMaxWidth(),
                     contentAlignment = androidx.compose.ui.Alignment.Center
                 ) {
-                    Text(
-                        text = "Nenhuma transação encontrada",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
                 }
             } else {
                 // 7) Lista de transações, que se atualiza automaticamente

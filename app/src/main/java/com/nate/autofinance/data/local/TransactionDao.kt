@@ -59,4 +59,7 @@ interface TransactionDao {
 
     @Query("SELECT SUM(amount) FROM `transaction` WHERE financialPeriodId = :periodId AND amount < 0")
     fun observeTotalExpenses(periodId: Int): Flow<Double?>
+
+    @Query("SELECT * FROM `transaction` WHERE firebaseDocId = :docId LIMIT 1")
+    suspend fun getTransactionByFirebaseDocId(docId: String): Transaction?
 }

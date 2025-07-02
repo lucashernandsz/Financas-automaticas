@@ -144,21 +144,36 @@ class TransactionViewModel : ViewModel() {
                 println("TransactionViewModel: ⚠️ Erro no syncAll(): ${e.message}")
             }
 
-            // 2️⃣ Se não houver período selecionado, cria/pergunta o padrão
-            val curr = session.getSelectedPeriodId(ctx)
-            if (curr == null) {
-                println("TransactionViewModel: 🤖 Criando período padrão")
-                try {
-                    createDefaultPeriod()  // :contentReference[oaicite:3]{index=3}
-                } catch (e: Exception) {
-                    println("TransactionViewModel: ❌ Falha ao criar período padrão: ${e.message}")
+            // 2️⃣ Tentar adotar período remoto marcado como isSelected
+            val localUserId = session.getUserId(ctx)
+            if (localUserId != null) {
+                val remoteSelected = ServiceLocator
+                    .periodRepository
+                    .getPeriodsForUser(localUserId)
+                    .firstOrNull { it.isSelected }           // ou usar DAO direto: periodDao.getSelectedPeriodByUserId(localUserId)
+                if (remoteSelected != null) {
+                    println("TransactionViewModel: 🤖 Adotando período remoto: ${remoteSelected.id}")
+                    session.saveSelectedPeriodId(ctx, remoteSelected.id)
+                    _selectedPeriodId.value = remoteSelected.id
+                } else {
+                    // 3️⃣ Se realmente não houver nenhum, cria padrão
+                    val curr = session.getSelectedPeriodId(ctx)
+                    if (curr == null) {
+                        println("TransactionViewModel: 🤖 Criando período padrão")
+                        try {
+                            createDefaultPeriod()
+                        } catch (e: Exception) {
+                            println("TransactionViewModel: ❌ Falha ao criar período padrão: ${e.message}")
+                        }
+                        val newId = session.getSelectedPeriodId(ctx)
+                        _selectedPeriodId.value = newId
+                    }
                 }
-                val newId = session.getSelectedPeriodId(ctx)
-                _selectedPeriodId.value = newId
-                println("TransactionViewModel: Período agora = $newId")
+            } else {
+                println("TransactionViewModel: ⚠️ Nenhum usuário local definido, pulando seleção de período")
             }
 
-            // 3️⃣ Força re-emissão do Flow (pra garantir atualização da UI)
+            // 4️⃣ Força re-emissão do Flow (pra garantir UI atualizada)
             _selectedPeriodId.value?.let { id ->
                 _selectedPeriodId.value = null
                 delay(100)
@@ -170,6 +185,7 @@ class TransactionViewModel : ViewModel() {
             println("TransactionViewModel: ✅ refreshTransactions() concluído")
         }
     }
+
 
     /** Para uso imediato após login */
     @RequiresApi(Build.VERSION_CODES.O)

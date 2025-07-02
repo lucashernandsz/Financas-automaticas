@@ -56,8 +56,27 @@ class LoginViewModel(
                 val localUser = userRepository.getOrCreateUser(firebaseUser)
                 SessionManager.saveUserId(appContext, localUser.id)
 
+                // 3. Executa sincronização imediata ANTES de navegar
+                val syncManager = ServiceLocator.syncManager
+                val createDefaultPeriod = ServiceLocator.createDefaultPeriodUseCase
+
+                try {
+                    // Sincroniza dados remotos
+                    syncManager.syncAll()
+
+                    // Garante que existe um período selecionado
+                    val currentPeriod = SessionManager.getSelectedPeriodId(appContext)
+                    if (currentPeriod == null) {
+                        createDefaultPeriod()
+                    }
+                } catch (syncError: Exception) {
+                    // Log do erro mas não falha o login
+                    println("LoginViewModel: Erro na sincronização inicial: ${syncError.message}")
+                }
+
                 _loginState.value = LoginState.Success(firebaseUser)
 
+                // Agenda sync periódico para depois
                 val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
                     .setConstraints(
                         Constraints.Builder()
@@ -69,7 +88,7 @@ class LoginViewModel(
                 WorkManager
                     .getInstance(appContext)
                     .enqueueUniqueWork(
-                        "initial_sync",
+                        "periodic_sync",
                         ExistingWorkPolicy.REPLACE,
                         syncRequest
                     )

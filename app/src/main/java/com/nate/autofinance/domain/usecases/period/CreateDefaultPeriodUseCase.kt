@@ -38,6 +38,9 @@ class CreateDefaultPeriodUseCase(
         )
 
         periodRepository.addFinancialPeriod(defaultPeriod)
+
+        // Persiste o período criado como selecionado na sessão
+        val created = periodRepository.getSelectedPeriodForUser(userId)
+        created?.let { session.saveSelectedPeriodId(context, it.id) }
     }
 }
-
