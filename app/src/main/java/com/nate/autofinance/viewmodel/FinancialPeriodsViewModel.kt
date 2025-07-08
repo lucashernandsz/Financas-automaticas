@@ -24,6 +24,9 @@ class FinancialPeriodsViewModel : ViewModel() {
     private val _selectedIndices = MutableStateFlow<Set<Int>>(emptySet())
     val selectedIndices: StateFlow<Set<Int>> = _selectedIndices.asStateFlow()
 
+    private val _activePeriodId = MutableStateFlow<Int?>(null)
+    val activePeriodId: StateFlow<Int?> = _activePeriodId.asStateFlow()
+
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
@@ -45,8 +48,14 @@ class FinancialPeriodsViewModel : ViewModel() {
         val period = _periods.value.getOrNull(index) ?: return
         viewModelScope.launch {
             selectPeriodUseCase(period.id)
+            _activePeriodId.value = period.id
+            _selectedIndices.value = emptySet() // Limpa a seleção de exclusão
             loadPeriods()
         }
+    }
+
+    fun setActivePeriodId(periodId: Int?) {
+        _activePeriodId.value = periodId
     }
 
     /** Exclui os períodos selecionados */
