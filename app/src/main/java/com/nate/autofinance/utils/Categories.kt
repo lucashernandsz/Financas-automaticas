@@ -2,14 +2,14 @@ package com.nate.autofinance.utils
 
 object Categories {
 
-    const val INCOME = "Income"
-    const val FOOD = "Food"
-    const val ENTERTAINMENT = "Entertainment"
-    const val TRANSPORTATION = "Transportation"
-    const val EDUCATION = "Education"
-    const val HEALTH = "Health"
-    const val HOUSING = "Housing"
-    const val OTHER = "Other"
+    const val INCOME = "+ Ganhos"
+    const val FOOD = "Comida"
+    const val ENTERTAINMENT = "Entretenimento"
+    const val TRANSPORTATION = "Transporte"
+    const val EDUCATION = "Educação"
+    const val HEALTH = "Saúde"
+    const val HOUSING = "Casa"
+    const val OTHER = "Outros"
 
     val fixedCategories = listOf(
         INCOME,
