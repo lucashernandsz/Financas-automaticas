@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.data.auth.AuthRepository
-import com.nate.autofinance.domain.models.User
+import com.nate.autofinance.data.models.User
 import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.ServiceLocator
 import kotlinx.coroutines.flow.MutableStateFlow

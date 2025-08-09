@@ -24,13 +24,13 @@ object ServiceLocator {
 
     // Room
     private val database by lazy { AppDatabase.getDatabase(context) }
-    private val transactionDao by lazy { database.transactionDao() }
-    private val financialPeriodDao by lazy { database.financialPeriodDao() }
+    internal val transactionDao by lazy { database.transactionDao() }
+    internal val financialPeriodDao by lazy { database.financialPeriodDao() }
     private val userDao by lazy { database.userDao() }
 
     // Firebase
-    private val transactionService by lazy { FirebaseTransactionService() }
-    private val periodService by lazy { FirebasePeriodService() }
+    internal val transactionService by lazy { FirebaseTransactionService() }
+    internal val periodService by lazy { FirebasePeriodService() }
     private val userService by lazy { FirebaseUserService(
         session = sessionManager,
         userDao = userDao
@@ -135,11 +135,6 @@ object ServiceLocator {
 
 
     val syncManager by lazy {
-        SyncManager(
-            periodDao = financialPeriodDao,
-            txDao = transactionDao,
-            session = sessionManager,
-            context = context
-        )
+        SyncManager(        )
     }
 }

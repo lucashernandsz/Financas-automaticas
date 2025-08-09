@@ -1,4 +1,4 @@
-// TransactionViewModel.kt
+// app/src/main/java/com/nate/autofinance/viewmodel/TransactionViewModel.kt
 package com.nate.autofinance.viewmodel
 
 import android.os.Build
@@ -6,42 +6,30 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nate.autofinance.ServiceLocator
-import com.nate.autofinance.domain.models.Transaction
+import com.nate.autofinance.data.models.Transaction
 import com.nate.autofinance.utils.Categories
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class TransactionViewModel : ViewModel() {
 
     private val repo = ServiceLocator.transactionRepository
+    private val periodDao = ServiceLocator.financialPeriodDao
     private val session = ServiceLocator.sessionManager
-    private val ctx = ServiceLocator.context
-    private val syncManager = ServiceLocator.syncManager                       // :contentReference[oaicite:0]{index=0}
-    private val createDefaultPeriod = ServiceLocator.createDefaultPeriodUseCase // :contentReference[oaicite:1]{index=1}
+    private val context = ServiceLocator.context
+    private val syncManager = ServiceLocator.syncManager
+    private val createDefaultPeriod = ServiceLocator.createDefaultPeriodUseCase
 
-    // 1) Contém o período “interno” até que o SessionManager emita o valor
-    private val _selectedPeriodId = MutableStateFlow<Int?>(null)
+    private val userId = session.getUserId(context) ?: throw IllegalStateException("User ID is null")
 
-    // 2) Combina mudanças internas e do SessionManager
-    private val selectedPeriodIdFlow: StateFlow<Int?> =
-        combine(_selectedPeriodId, session.selectedPeriodIdFlow) { internal, remote ->
-            val chosen = remote ?: internal
-            println("TransactionViewModel: Período combinado - interno: $internal, session: $remote → $chosen")
-            chosen
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
+    val selectedPeriodIdFlow: StateFlow<Long?> =
+        periodDao.observeSelectedId(userId)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    // 3) Muda de fluxo conforme o período selecionado
     private val transactionsFlow: Flow<List<Transaction>> =
         selectedPeriodIdFlow.flatMapLatest { periodId ->
             if (periodId != null) {
-                println("TransactionViewModel: ✅ Observando transações para período $periodId")
-                repo.observeTransactions(periodId)
-                    .onStart { println("TransactionViewModel: 🔄 Iniciando observação das transações") }
+                repo.observeTransactions(periodId.toInt())
                     .catch { e ->
                         println("TransactionViewModel: ❌ Erro no fluxo: ${e.message}")
                         emit(emptyList())
@@ -52,11 +40,9 @@ class TransactionViewModel : ViewModel() {
             }
         }
 
-    // 4) Exposto para a UI
     val transactions: StateFlow<List<Transaction>> =
         transactionsFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    // —— filtros de categoria ——
     private val _categories = MutableStateFlow(listOf("All") + Categories.fixedCategories)
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
 
@@ -75,119 +61,56 @@ class TransactionViewModel : ViewModel() {
             filtered
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    // —— estado de loading & erros ——
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    init {
-        println("TransactionViewModel: Inicializando…")
-        // Carrega de SharedPreferences → _selectedPeriodId
-        loadSelectedPeriod()
-
-        // Sempre que o SessionManager mudar, propaga para o interno
-        viewModelScope.launch {
-            session.selectedPeriodIdFlow.collect { remoteId ->
-                if (remoteId != null && remoteId != _selectedPeriodId.value) {
-                    println("TransactionViewModel: SessionManager emitiu novo período: $remoteId")
-                    _selectedPeriodId.value = remoteId
-                }
-            }
+    fun setCategoryFilter(category: String) {
+        if (_categories.value.contains(category)) {
+            _selectedCategory.value = category
         }
     }
 
-    private fun loadSelectedPeriod() {
+    fun clearError() { _errorMessage.value = null }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun refreshTransactions() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val saved = session.getSelectedPeriodId(ctx)                  // :contentReference[oaicite:2]{index=2}
-                println("TransactionViewModel: Carregado período inicial: $saved")
-                _selectedPeriodId.value = saved
+                syncManager.syncAll()
+
+                val selectedIdNow: Long? = periodDao.observeSelectedId(userId).first()
+                if (selectedIdNow == null) {
+                    val periods = ServiceLocator.periodRepository.getPeriodsForUser(userId)
+                    if (periods.isEmpty()) {
+                        createDefaultPeriod()
+                    } else if (periods.size == 1) {
+                        ServiceLocator.periodRepository.selectOnly(periods.first().id)
+                        session.saveSelectedPeriodId(context, periods.first().id.toInt())
+                    } else {
+                        ServiceLocator.periodRepository.selectOnly(periods.first().id)
+                        session.saveSelectedPeriodId(context, periods.first().id.toInt())
+                    }
+
+                }
+
+                periodDao.observeSelectedId(userId).first()?.let { id ->
+                    session.saveSelectedPeriodId(context, id.toInt())
+                }
+
+                _errorMessage.value = null
             } catch (e: Exception) {
-                _errorMessage.value = "Erro ao carregar período: ${e.message}"
+                _errorMessage.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    /** Atualiza o filtro de categoria */
-    fun setCategoryFilter(category: String) {
-        if (_categories.value.contains(category)) {
-            println("TransactionViewModel: Mudando filtro para $category")
-            _selectedCategory.value = category
-        }
-    }
 
-    /** Força recarregar o período salvo */
-    fun refreshPeriod() = loadSelectedPeriod()
-
-    /** Remove mensagem de erro */
-    fun clearError() { _errorMessage.value = null }
-
-    /**
-     * Sincroniza tudo, garante que exista período e “refresh” das transações
-     */
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun refreshTransactions() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            println("TransactionViewModel: 🔄 Iniciando sincronização completa…")
-
-            // 1️⃣ Sync remoto ↔ local
-            try {
-                syncManager.syncAll()
-                println("TransactionViewModel: ✅ syncAll() OK")
-            } catch (e: Exception) {
-                println("TransactionViewModel: ⚠️ Erro no syncAll(): ${e.message}")
-            }
-
-            // 2️⃣ Tentar adotar período remoto marcado como isSelected
-            val localUserId = session.getUserId(ctx)
-            if (localUserId != null) {
-                val remoteSelected = ServiceLocator
-                    .periodRepository
-                    .getPeriodsForUser(localUserId)
-                    .firstOrNull { it.isSelected }           // ou usar DAO direto: periodDao.getSelectedPeriodByUserId(localUserId)
-                if (remoteSelected != null) {
-                    println("TransactionViewModel: 🤖 Adotando período remoto: ${remoteSelected.id}")
-                    session.saveSelectedPeriodId(ctx, remoteSelected.id)
-                    _selectedPeriodId.value = remoteSelected.id
-                } else {
-                    // 3️⃣ Se realmente não houver nenhum, cria padrão
-                    val curr = session.getSelectedPeriodId(ctx)
-                    if (curr == null) {
-                        println("TransactionViewModel: 🤖 Criando período padrão")
-                        try {
-                            createDefaultPeriod()
-                        } catch (e: Exception) {
-                            println("TransactionViewModel: ❌ Falha ao criar período padrão: ${e.message}")
-                        }
-                        val newId = session.getSelectedPeriodId(ctx)
-                        _selectedPeriodId.value = newId
-                    }
-                }
-            } else {
-                println("TransactionViewModel: ⚠️ Nenhum usuário local definido, pulando seleção de período")
-            }
-
-            // 4️⃣ Força re-emissão do Flow (pra garantir UI atualizada)
-            _selectedPeriodId.value?.let { id ->
-                _selectedPeriodId.value = null
-                delay(100)
-                _selectedPeriodId.value = id
-            }
-
-            _errorMessage.value = null
-            _isLoading.value = false
-            println("TransactionViewModel: ✅ refreshTransactions() concluído")
-        }
-    }
-
-
-    /** Para uso imediato após login */
     @RequiresApi(Build.VERSION_CODES.O)
     fun syncAfterLogin() {
         println("TransactionViewModel: 🔐 syncAfterLogin()")
@@ -196,6 +119,5 @@ class TransactionViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        println("TransactionViewModel: onCleared()")
     }
 }

@@ -2,8 +2,8 @@ package com.nate.autofinance.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.nate.autofinance.domain.models.FinancialPeriod
-import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.data.models.FinancialPeriod
+import com.nate.autofinance.data.models.SyncStatus
 import kotlinx.coroutines.tasks.await
 
 class FirebasePeriodService(
@@ -11,7 +11,7 @@ class FirebasePeriodService(
 ) {
     private val periodsCollection = firestore.collection("financialPeriods")
 
-    suspend fun addFinancialPeriod(period: FinancialPeriod): String {
+    suspend fun add(period: FinancialPeriod): String {
         val authUid = FirebaseAuth.getInstance().currentUser!!.uid
         val periodMap = hashMapOf(
             "startDate"         to period.startDate,
@@ -25,7 +25,7 @@ class FirebasePeriodService(
         return periodsCollection.add(periodMap).await().id
     }
 
-    suspend fun updateFinancialPeriod(
+    suspend fun update(
         documentId: String,
         updatedData: Map<String, Any?>
     ) {
@@ -35,7 +35,7 @@ class FirebasePeriodService(
             .await()
     }
 
-    suspend fun deleteFinancialPeriod(documentId: String) {
+    suspend fun delete(documentId: String) {
         periodsCollection.document(documentId).delete().await()
     }
 

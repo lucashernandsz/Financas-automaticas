@@ -4,7 +4,7 @@ package com.nate.autofinance.domain.usecases.transaction
 import android.content.Context
 import com.nate.autofinance.data.repository.TransactionRepository
 import com.nate.autofinance.data.repository.PeriodRepository
-import com.nate.autofinance.domain.models.Transaction
+import com.nate.autofinance.data.models.Transaction
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.utils.SessionManager
 
@@ -43,6 +43,6 @@ class EditTransactionUseCase(
             amount            = adjustedAmount,
         )
 
-        transactionRepo.updateTransaction(tx)                                           // :contentReference[oaicite:8]{index=8}&#8203;:contentReference[oaicite:9]{index=9}
+        transactionRepo.update(tx)                                           // :contentReference[oaicite:8]{index=8}&#8203;:contentReference[oaicite:9]{index=9}
     }
 }

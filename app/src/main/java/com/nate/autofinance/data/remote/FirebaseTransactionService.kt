@@ -2,8 +2,8 @@ package com.nate.autofinance.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.nate.autofinance.domain.models.Transaction
-import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.data.models.SyncStatus
 import kotlinx.coroutines.tasks.await
 
 class FirebaseTransactionService(
@@ -11,7 +11,7 @@ class FirebaseTransactionService(
 ) {
     private val txCollection = firestore.collection("transactions")
 
-    suspend fun addTransaction(tx: Transaction): String {
+    suspend fun insert(tx: Transaction): String {
         val authUid = FirebaseAuth.getInstance().currentUser!!.uid
         val txMap = hashMapOf(
             "date"                         to tx.date,
@@ -26,7 +26,7 @@ class FirebaseTransactionService(
         return txCollection.add(txMap).await().id
     }
 
-    suspend fun updateTransaction(
+    suspend fun update(
         documentId: String,
         updatedData: Map<String, Any?>
     ) {
@@ -36,7 +36,7 @@ class FirebaseTransactionService(
             .await()
     }
 
-    suspend fun deleteTransaction(documentId: String) {
+    suspend fun delete(documentId: String) {
         txCollection.document(documentId).delete().await()
     }
 

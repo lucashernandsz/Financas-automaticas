@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.nate.autofinance.data.repository.PeriodRepository
-import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.data.models.FinancialPeriod
 import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.utils.toDate
 import java.time.LocalDate
@@ -28,7 +28,7 @@ class CreateNewPeriodUseCase(
                 endDate = today,
                 isSelected = false
             )
-            periodRepository.updateFinancialPeriod(closedOld)
+            periodRepository.update(closedOld)
         }
 
         val newPeriod = FinancialPeriod(
@@ -37,6 +37,6 @@ class CreateNewPeriodUseCase(
             isSelected = true,
             userId = userId
         )
-        periodRepository.addFinancialPeriod(newPeriod)
+        periodRepository.insert(newPeriod)
     }
 }

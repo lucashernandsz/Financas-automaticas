@@ -6,8 +6,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.nate.autofinance.domain.models.FinancialPeriod
-import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.data.models.FinancialPeriod
+import com.nate.autofinance.data.models.SyncStatus
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FinancialPeriodDao {
@@ -19,6 +20,9 @@ interface FinancialPeriodDao {
 
     @Delete
     suspend fun delete(period: FinancialPeriod): Int
+
+    @Query("UPDATE financial_period SET isSelected = CASE WHEN id = :selectedId THEN 1 ELSE 0 END")
+    suspend fun selectOnly(selectedId: Int): Int
 
     @Query("SELECT * FROM financial_period WHERE id = :id")
     suspend fun getPeriodById(id: Int): FinancialPeriod?
@@ -41,5 +45,10 @@ interface FinancialPeriodDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(periods: List<FinancialPeriod>)
 
-
+    @Query("""
+    SELECT id FROM financial_period
+    WHERE userId = :userId AND isSelected = 1
+    LIMIT 1
+""")
+    fun observeSelectedId(userId: Int): Flow<Long?>
 }

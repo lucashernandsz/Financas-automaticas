@@ -28,7 +28,6 @@ import com.nate.autofinance.ui.screens.settings.financialPeriods.FinancialPeriod
 import com.nate.autofinance.ui.theme.AutofinanceTheme
 import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.viewmodel.*
-import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.NewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
 import com.nate.autofinance.ui.screens.transactionList.editTransaction.EditTransactionScreen

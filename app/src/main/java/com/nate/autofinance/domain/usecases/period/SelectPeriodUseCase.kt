@@ -12,25 +12,7 @@ class SelectPeriodUseCase(
     private val context: Context
 ) {
     suspend operator fun invoke(periodId: Int) {
-        val userId = session.getUserId(context)
-            ?: throw IllegalStateException("Nenhum usuário logado")
-
-        // Busca todos os períodos do usuário
-        val allPeriods = periodRepository.getPeriodsForUser(userId)
-
-        // Itera sobre todos os períodos e atualiza cada um APENAS UMA VEZ
-        allPeriods.forEach { period ->
-            // Define 'isSelected' como true apenas se o ID corresponder ao período clicado
-            val shouldBeSelected = period.id == periodId
-
-            // Se o estado atual for diferente do que deveria ser, atualiza
-            if (period.isSelected != shouldBeSelected) {
-                val updatedPeriod = period.copy(isSelected = shouldBeSelected)
-                periodRepository.updateFinancialPeriod(updatedPeriod)
-            }
-        }
-
-        // Salva o ID do período selecionado na sessão para notificar outras partes do app
+        periodRepository.selectOnly(periodId)
         session.saveSelectedPeriodId(context, periodId)
     }
 }

@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.nate.autofinance.data.repository.PeriodRepository
-import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.data.models.FinancialPeriod
 import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.utils.toDate
 import java.time.LocalDate
@@ -37,7 +37,7 @@ class CreateDefaultPeriodUseCase(
             userId = userId
         )
 
-        periodRepository.addFinancialPeriod(defaultPeriod)
+        periodRepository.insert(defaultPeriod)
 
         // Persiste o período criado como selecionado na sessão
         val created = periodRepository.getSelectedPeriodForUser(userId)

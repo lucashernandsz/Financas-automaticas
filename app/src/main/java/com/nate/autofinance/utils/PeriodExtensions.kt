@@ -1,6 +1,6 @@
 package com.nate.autofinance.utils
 
-import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.data.models.FinancialPeriod
 import java.text.SimpleDateFormat
 import java.util.*
 

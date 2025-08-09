@@ -2,7 +2,7 @@ package com.nate.autofinance.domain.usecases.transaction
 
 import android.content.Context
 import com.nate.autofinance.data.repository.TransactionRepository
-import com.nate.autofinance.domain.models.Transaction
+import com.nate.autofinance.data.models.Transaction
 import com.nate.autofinance.utils.SessionManager
 
 class GetTransactionByIdUseCase(

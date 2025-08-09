@@ -28,7 +28,7 @@ fun FinancialPeriodsScreen(
 ) {
     val periods by viewModel.periods.collectAsState()
     val activePeriodId by viewModel.activePeriodId.collectAsState()
-    val activeIndex = periods.indexOfFirst { it.id == activePeriodId }
+    val activeIndex = periods.indexOfFirst { it.id == activePeriodId?.toInt() }
     val deleteSelection by viewModel.selectedIndices.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 

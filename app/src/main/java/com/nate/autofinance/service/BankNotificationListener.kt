@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.repository.SettingsRepository
-import com.nate.autofinance.domain.models.Transaction
+import com.nate.autofinance.data.models.Transaction
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope

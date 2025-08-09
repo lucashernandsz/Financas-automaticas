@@ -2,7 +2,7 @@ package com.nate.autofinance.domain.usecases.period
 
 import android.content.Context
 import com.nate.autofinance.data.repository.PeriodRepository
-import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.data.models.FinancialPeriod
 import com.nate.autofinance.utils.SessionManager
 
 class DeletePeriodsUseCase(
@@ -21,7 +21,7 @@ class DeletePeriodsUseCase(
         }
 
         periods.forEach { period ->
-            periodRepository.deleteFinancialPeriod(period)
+            periodRepository.delete(period)
         }
     }
 }

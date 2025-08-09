@@ -4,7 +4,7 @@ package com.nate.autofinance.domain.usecases.transaction
 import android.content.Context
 import com.nate.autofinance.data.repository.TransactionRepository
 import com.nate.autofinance.data.repository.PeriodRepository
-import com.nate.autofinance.domain.models.Transaction
+import com.nate.autofinance.data.models.Transaction
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.utils.SessionManager
 
@@ -43,7 +43,7 @@ class AddTransactionUseCase(
         )
 
         // Adiciona a transação
-        transactionRepo.addTransaction(tx)
+        transactionRepo.add(tx)
 
         // Garante que o período selecionado está correto no SessionManager
         session.saveSelectedPeriodId(context, period.id)

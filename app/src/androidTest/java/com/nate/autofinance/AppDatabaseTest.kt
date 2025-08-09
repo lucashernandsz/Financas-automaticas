@@ -7,9 +7,9 @@ import com.nate.autofinance.data.local.AppDatabase
 import com.nate.autofinance.data.local.FinancialPeriodDao
 import com.nate.autofinance.data.local.TransactionDao
 import com.nate.autofinance.data.local.UserDao
-import com.nate.autofinance.domain.models.FinancialPeriod
-import com.nate.autofinance.domain.models.Transaction
-import com.nate.autofinance.domain.models.User
+import com.nate.autofinance.data.models.FinancialPeriod
+import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.data.models.User
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat

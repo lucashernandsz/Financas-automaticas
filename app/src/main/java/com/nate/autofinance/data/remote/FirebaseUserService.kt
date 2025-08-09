@@ -4,8 +4,8 @@ import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.nate.autofinance.domain.models.User
-import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.data.models.User
+import com.nate.autofinance.data.models.SyncStatus
 import com.nate.autofinance.data.local.UserDao
 import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.tasks.await

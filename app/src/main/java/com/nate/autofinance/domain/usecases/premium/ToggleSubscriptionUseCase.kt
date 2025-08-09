@@ -1,7 +1,6 @@
 package com.nate.autofinance.domain.usecases.subscription
 
 import com.nate.autofinance.data.repository.UserRepository
-import com.nate.autofinance.domain.models.User
 import com.nate.autofinance.utils.SessionManager
 import android.content.Context
 

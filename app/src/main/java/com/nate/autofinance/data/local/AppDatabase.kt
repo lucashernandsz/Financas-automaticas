@@ -5,13 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.nate.autofinance.data.local.Converters
-import com.nate.autofinance.data.local.FinancialPeriodDao
-import com.nate.autofinance.data.local.TransactionDao
-import com.nate.autofinance.data.local.UserDao
-import com.nate.autofinance.domain.models.User
-import com.nate.autofinance.domain.models.Transaction
-import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.data.models.User
+import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.data.models.FinancialPeriod
 
 @Database(
     entities = [User::class, Transaction::class, FinancialPeriod::class],
