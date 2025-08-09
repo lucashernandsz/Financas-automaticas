@@ -43,17 +43,17 @@ class TransactionViewModel : ViewModel() {
     val transactions: StateFlow<List<Transaction>> =
         transactionsFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    private val _categories = MutableStateFlow(listOf("All") + Categories.fixedCategories)
+    private val _categories = MutableStateFlow(listOf("Todas") + Categories.fixedCategories)
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
 
-    private val _selectedCategory = MutableStateFlow("All")
+    private val _selectedCategory = MutableStateFlow("Todas")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
     val filteredTransactions: StateFlow<List<Transaction>> =
         combine(transactions, selectedCategory) { txs, cat ->
             println("TransactionViewModel: ✅ Filtrando ${txs.size} transações para '$cat'")
             val filtered = when {
-                cat == "All"           -> txs
+                cat == "Todas"           -> txs
                 cat == Categories.INCOME -> txs.filter { it.category == Categories.INCOME }
                 else                   -> txs.filter { it.category == cat }
             }

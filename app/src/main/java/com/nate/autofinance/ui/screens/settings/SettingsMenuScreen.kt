@@ -73,12 +73,6 @@ fun SettingsMenuScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SettingsItem(
-                icon = Icons.Default.AddCircle,
-                text = "Gerenciar categorias",
-                enabled = isSubscribed,
-                onClick = onNavigateToCategories
-            )
-            SettingsItem(
                 icon = Icons.Default.Notifications,
                 text = "Inserção automática por notificação",
                 enabled = isSubscribed,
