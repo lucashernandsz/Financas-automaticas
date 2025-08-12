@@ -3,7 +3,6 @@ package com.nate.autofinance
 import FetchTransactionsForSelectedPeriodUseCase
 import android.annotation.SuppressLint
 import android.content.Context
-import com.google.firebase.firestore.FirebaseFirestore
 import com.nate.autofinance.data.local.AppDatabase
 import com.nate.autofinance.data.remote.FirebasePeriodService
 import com.nate.autofinance.data.remote.FirebaseTransactionService
@@ -12,9 +11,9 @@ import com.nate.autofinance.data.repository.PeriodRepository
 import com.nate.autofinance.data.repository.TransactionRepository
 import com.nate.autofinance.data.repository.UserRepository
 import com.nate.autofinance.data.sync.SyncManager
-import com.nate.autofinance.domain.usecases.period.*
-import com.nate.autofinance.domain.usecases.subscription.ToggleSubscriptionUseCase
-import com.nate.autofinance.domain.usecases.transaction.*
+import com.nate.autofinance.domain.usecase.period.*
+import com.nate.autofinance.domain.usecase.subscription.ToggleSubscriptionUseCase
+import com.nate.autofinance.domain.usecase.transaction.*
 import com.nate.autofinance.utils.SessionManager
 
 @SuppressLint("StaticFieldLeak")
@@ -103,24 +102,23 @@ object ServiceLocator {
     val addTransactionUseCase by lazy {
         AddTransactionUseCase(
             transactionRepository,
-            periodRepository,
             sessionManager,
-            context
+            context,
+            getCurrentActivePeriod = GetCurrentActivePeriodUseCase(
+                periodRepository,
+                sessionManager,
+                context
+            )
         )
     }
     val editTransactionUseCase by lazy {
         EditTransactionUseCase(
             transactionRepository,
-            periodRepository,
-            sessionManager,
-            context
         )
     }
     val deleteTransactionUseCase by lazy {
         DeleteTransactionUseCase(
             transactionRepository,
-            sessionManager,
-            context
         )
     }
 

@@ -1,13 +1,11 @@
 package com.nate.autofinance.ui.screens.settings.financialPeriods
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.material3.CheckboxDefaults.colors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
 import com.nate.autofinance.utils.toLabel
-import com.nate.autofinance.viewmodel.FinancialPeriodsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
