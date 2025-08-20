@@ -19,6 +19,7 @@ class FirebaseTransactionService(
             "description"                  to tx.description,
             "category"                     to tx.category,
             "imported"                     to tx.imported,
+            "isCredit"                    to tx.isCredit,
             "syncStatus"                   to tx.syncStatus.name,
             "firebaseDocUserId"            to authUid,
             "firebaseDocFinancialPeriodId" to (tx.firebaseDocFinancialPeriodId ?: "")

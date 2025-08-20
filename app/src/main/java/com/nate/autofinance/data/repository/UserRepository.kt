@@ -9,6 +9,7 @@ import com.nate.autofinance.domain.models.User
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class UserRepository(
     private val userDao: UserDao,
@@ -27,15 +28,13 @@ class UserRepository(
         try {
             // Tenta inserir o usuário no Firebase
             val firebaseDocId = firebaseUserService.addUser(user)
-            if (firebaseDocId != null) {
-                Log.i(TAG, "User added to Firebase with id: $firebaseDocId")
-                // Atualiza o usuário local com o firebaseDocId e status SYNCED
-                val updatedUser = user.copy(
-                    firebaseDocId = firebaseDocId,
-                    syncStatus = SyncStatus.SYNCED
-                )
-                userDao.update(updatedUser)
-            }
+            Timber.tag(TAG).i("User added to Firebase with id: $firebaseDocId")
+            // Atualiza o usuário local com o firebaseDocId e status SYNCED
+            val updatedUser = user.copy(
+                firebaseDocId = firebaseDocId,
+                syncStatus = SyncStatus.SYNCED
+            )
+            userDao.update(updatedUser)
             localInsertResult
         } catch (ex: Exception) {
             Log.e(TAG, "Error sending user to Firebase", ex)

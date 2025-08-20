@@ -25,7 +25,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
 
     private val authRepository = AuthRepository()
     private val userRepository = ServiceLocator.userRepository
-    private val createDefaultPeriodUseCase = ServiceLocator.createDefaultPeriodUseCase
+    private val createPredefinedPeriodsUseCase = ServiceLocator.createPredefinedPeriodsUseCase
     private val appContext = application
 
     private val _state = MutableStateFlow<RegisterState>(RegisterState.Idle)
@@ -58,7 +58,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                     ?: throw IllegalStateException("Falha ao criar usuário local")
 
                 SessionManager.saveUserId(appContext, localUserId.toInt())
-                createDefaultPeriodUseCase()
+                createPredefinedPeriodsUseCase()
 
                 _state.value = RegisterState.Success(firebaseUser)
             } catch (e: Exception) {

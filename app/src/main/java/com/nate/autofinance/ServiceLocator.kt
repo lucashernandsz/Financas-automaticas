@@ -132,6 +132,14 @@ object ServiceLocator {
         )
     }
 
+    val createPredefinedPeriodsUseCase by lazy {
+        CreatePredefinedPeriodsUseCase(
+            periodRepository,
+            sessionManager,
+            context
+        )
+    }
+
 
 
     val syncManager by lazy {

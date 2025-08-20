@@ -25,6 +25,7 @@ fun Transaction.toFirestoreMap(): Map<String, Any?> {
         "category" to this.category,
         "imported" to this.imported,
         "syncStatus" to this.syncStatus.name,
+        "isCredit" to this.isCredit,
         "firebaseDocUserId" to this.firebaseDocUserId,
         "firebaseDocFinancialPeriodId" to this.firebaseDocFinancialPeriodId
         // firebaseDocId é o ID do documento e não deve ser incluído nos dados do documento.

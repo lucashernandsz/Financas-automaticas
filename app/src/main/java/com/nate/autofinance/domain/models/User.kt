@@ -10,6 +10,7 @@ data class User(
     val email: String,
     val syncStatus: SyncStatus = SyncStatus.PENDING,
     val isSubscribed: Boolean = false,
+    val closingDate: Int = 1,
     var firebaseDocId: String? = null
 ) {
     /** Construtor sem argumentos exigido pelo Firestore via refxlexão */
@@ -20,6 +21,7 @@ data class User(
         email          = "",
         syncStatus     = SyncStatus.PENDING,
         isSubscribed   = false,
+        closingDate    = 1,
         firebaseDocId  = null
     )
 }

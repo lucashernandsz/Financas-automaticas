@@ -42,7 +42,8 @@ class FirebaseUserService(
             "name"         to localUser.name,
             "email"        to localUser.email,
             "syncStatus"   to SyncStatus.SYNCED.name,
-            "isSubscribed" to localUser.isSubscribed
+            "isSubscribed" to localUser.isSubscribed,
+            "closingDate"    to localUser.closingDate
         )
 
         // 4) Grava (ou atualiza) o documento com ID = authUid

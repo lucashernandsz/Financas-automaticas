@@ -21,6 +21,10 @@ class PeriodRepository(
         periodDao.insert(period)
     }
 
+    suspend fun insertAll(periods: List<FinancialPeriod>) = withContext(ioDispatcher) {
+        periodDao.insertAll(periods)
+    }
+
     suspend fun update(period: FinancialPeriod) = withContext(ioDispatcher) {
         periodDao.update(period)
     }
