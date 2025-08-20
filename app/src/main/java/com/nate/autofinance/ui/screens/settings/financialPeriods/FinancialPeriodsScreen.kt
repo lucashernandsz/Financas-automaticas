@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
 import com.nate.autofinance.utils.toLabel
-import com.nate.autofinance.viewmodel.FinancialPeriodsViewModel
+import com.nate.autofinance.ui.screens.settings.financialPeriods.FinancialPeriodsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

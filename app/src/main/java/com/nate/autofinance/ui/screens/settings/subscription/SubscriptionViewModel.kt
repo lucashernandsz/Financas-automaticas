@@ -1,4 +1,4 @@
-package com.nate.autofinance.ui.viewmodel
+package com.nate.autofinance.ui.screens.settings.subscription
 
 import android.app.Application
 import android.content.Intent
@@ -10,7 +10,11 @@ import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.repository.SettingsRepository
 import com.nate.autofinance.domain.usecases.subscription.ToggleSubscriptionUseCase
 import com.nate.autofinance.utils.SessionManager
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SubscriptionViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,7 +32,7 @@ class SubscriptionViewModel(application: Application) : AndroidViewModel(applica
 
     // estado da preferência de importação
     val isImportEnabled: StateFlow<Boolean> = settingsRepo.notificationImportEnabled
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        .stateIn(viewModelScope, SharingStarted.Companion.Eagerly, false)
 
     private val _hasPermission = MutableStateFlow(
         NotificationManagerCompat.getEnabledListenerPackages(appContext)

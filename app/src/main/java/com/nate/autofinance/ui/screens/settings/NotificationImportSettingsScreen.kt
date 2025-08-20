@@ -22,7 +22,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
-import com.nate.autofinance.ui.viewmodel.SubscriptionViewModel
+import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

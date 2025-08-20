@@ -3,7 +3,7 @@ package com.nate.autofinance.data.repository
 
 import com.nate.autofinance.data.local.TransactionDao
 import com.nate.autofinance.data.remote.FirebaseTransactionService
-import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

@@ -4,8 +4,8 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.data.local.UserDao
 import com.nate.autofinance.data.remote.FirebaseUserService
-import com.nate.autofinance.data.models.SyncStatus
-import com.nate.autofinance.data.models.User
+import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.domain.models.User
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

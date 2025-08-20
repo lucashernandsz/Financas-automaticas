@@ -1,10 +1,8 @@
 package com.nate.autofinance.data.repository
 
-import android.util.Log
 import com.nate.autofinance.data.local.FinancialPeriodDao
 import com.nate.autofinance.data.remote.FirebasePeriodService
-import com.nate.autofinance.data.models.FinancialPeriod
-import com.nate.autofinance.data.models.SyncStatus
+import com.nate.autofinance.domain.models.FinancialPeriod
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

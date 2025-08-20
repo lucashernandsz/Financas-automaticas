@@ -1,5 +1,5 @@
 // app/src/main/java/com/nate/autofinance/viewmodel/LoginViewModel.kt
-package com.nate.autofinance.viewmodel
+package com.nate.autofinance.ui.screens.login
 
 import android.app.Application
 import android.os.Build
@@ -7,11 +7,9 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseUser
 import com.nate.autofinance.ServiceLocator
@@ -21,7 +19,6 @@ import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 sealed class LoginState {
     object Idle    : LoginState()

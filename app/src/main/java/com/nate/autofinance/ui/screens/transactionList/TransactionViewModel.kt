@@ -1,14 +1,23 @@
-// app/src/main/java/com/nate/autofinance/viewmodel/TransactionViewModel.kt
-package com.nate.autofinance.viewmodel
+package com.nate.autofinance.ui.screens.transactionList
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nate.autofinance.ServiceLocator
-import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.utils.Categories
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class TransactionViewModel : ViewModel() {
@@ -24,7 +33,7 @@ class TransactionViewModel : ViewModel() {
 
     val selectedPeriodIdFlow: StateFlow<Long?> =
         periodDao.observeSelectedId(userId)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+            .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5_000), null)
 
     private val transactionsFlow: Flow<List<Transaction>> =
         selectedPeriodIdFlow.flatMapLatest { periodId ->
@@ -41,7 +50,7 @@ class TransactionViewModel : ViewModel() {
         }
 
     val transactions: StateFlow<List<Transaction>> =
-        transactionsFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        transactionsFlow.stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5_000), emptyList())
 
     private val _categories = MutableStateFlow(listOf("Todas") + Categories.fixedCategories)
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
@@ -53,13 +62,13 @@ class TransactionViewModel : ViewModel() {
         combine(transactions, selectedCategory) { txs, cat ->
             println("TransactionViewModel: ✅ Filtrando ${txs.size} transações para '$cat'")
             val filtered = when {
-                cat == "Todas"           -> txs
+                cat == "Todas" -> txs
                 cat == Categories.INCOME -> txs.filter { it.category == Categories.INCOME }
-                else                   -> txs.filter { it.category == cat }
+                else -> txs.filter { it.category == cat }
             }
             println("TransactionViewModel: ✅ ${filtered.size} após filtragem")
             filtered
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        }.stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5_000), emptyList())
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()

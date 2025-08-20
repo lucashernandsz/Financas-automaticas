@@ -1,9 +1,9 @@
-package com.nate.autofinance.viewmodel
+package com.nate.autofinance.ui.screens.settings.financialPeriods
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nate.autofinance.data.models.FinancialPeriod
 import com.nate.autofinance.ServiceLocator
+import com.nate.autofinance.domain.models.FinancialPeriod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,7 +35,7 @@ class FinancialPeriodsViewModel : ViewModel() {
     // 🔑 Fonte de verdade: ID do período ativo vindo do DAO
     val activePeriodId: StateFlow<Long?> =
         periodDao.observeSelectedId(userId)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+            .stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5_000), null)
 
     fun loadPeriods() {
         viewModelScope.launch {

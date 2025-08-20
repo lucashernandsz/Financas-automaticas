@@ -1,10 +1,10 @@
 // app/src/main/java/com/nate/autofinance/viewmodel/EditTransactionViewModel.kt
-package com.nate.autofinance.viewmodel
+package com.nate.autofinance.ui.screens.transactionList.editTransaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nate.autofinance.ServiceLocator
-import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

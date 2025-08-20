@@ -1,10 +1,9 @@
-package com.nate.autofinance.viewmodel
+package com.nate.autofinance.ui.screens.settings.newFinancialPeriod
 
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.nate.autofinance.domain.usecases.period.CreateNewPeriodUseCase
 import com.nate.autofinance.ServiceLocator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

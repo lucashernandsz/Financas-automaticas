@@ -1,8 +1,7 @@
-package com.nate.autofinance.service
+package com.nate.autofinance.data.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -11,7 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.repository.SettingsRepository
-import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
@@ -138,7 +137,7 @@ class BankNotificationListener : NotificationListenerService() {
     private fun createNotificationChannel() {
         // Apenas em Android O (API 26) ou superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val mgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val mgr = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             if (mgr.getNotificationChannel(CHANNEL_ID) == null) {
                 val channel = NotificationChannel(
                     CHANNEL_ID,

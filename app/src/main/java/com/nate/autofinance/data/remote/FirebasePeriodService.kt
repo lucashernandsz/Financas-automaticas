@@ -2,8 +2,8 @@ package com.nate.autofinance.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.nate.autofinance.data.models.FinancialPeriod
-import com.nate.autofinance.data.models.SyncStatus
+import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.domain.models.SyncStatus
 import kotlinx.coroutines.tasks.await
 
 class FirebasePeriodService(

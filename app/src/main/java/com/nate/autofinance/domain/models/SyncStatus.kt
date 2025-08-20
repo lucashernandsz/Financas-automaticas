@@ -1,4 +1,4 @@
-package com.nate.autofinance.data.models
+package com.nate.autofinance.domain.models
 
 enum class SyncStatus {
     PENDING,

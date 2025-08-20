@@ -8,9 +8,9 @@ import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.local.FinancialPeriodDao
 import com.nate.autofinance.data.local.TransactionDao
 import com.nate.autofinance.data.remote.FirebaseTransactionService
-import com.nate.autofinance.data.models.FinancialPeriod
-import com.nate.autofinance.data.models.SyncStatus
-import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.domain.models.FinancialPeriod
+import com.nate.autofinance.domain.models.SyncStatus
+import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.utils.SessionManager
 
 class SyncManager(
