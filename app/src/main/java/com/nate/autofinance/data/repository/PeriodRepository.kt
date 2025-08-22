@@ -6,6 +6,7 @@ import com.nate.autofinance.domain.models.FinancialPeriod
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Date
 
 class PeriodRepository(
     private val periodDao: FinancialPeriodDao,
@@ -51,6 +52,14 @@ class PeriodRepository(
 
     suspend fun getPeriodsForUser(userId: Int): List<FinancialPeriod> = withContext(ioDispatcher) {
         periodDao.getPeriodsByUserId(userId)
+    }
+
+    suspend fun getNextPeriodForUser(userId: Int): FinancialPeriod? = withContext(ioDispatcher) {
+        val periods = periodDao.getPeriodsByUserId(userId)
+        val today = Date()
+        periods
+            .filter { it.startDate != null && it.startDate.after(today) }
+            .minByOrNull { it.startDate!!.time - today.time }
     }
 
 }

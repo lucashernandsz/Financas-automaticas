@@ -18,10 +18,15 @@ class AddTransactionUseCase(
         val userId = session.getUserId(context)
             ?: throw IllegalStateException("Nenhum usuário logado")
 
-        val period = periodRepo.getSelectedPeriodForUser(userId)
-            ?: throw IllegalStateException("Nenhum período ativo")
+        val period = if (transaction.isCredit){
+            periodRepo.getNextPeriodForUser(userId)
+        } else {
+            periodRepo.getSelectedPeriodForUser(userId)
+        }
 
-        println("AddTransactionUseCase: Adicionando transação para período ${period.id}")
+        if (period == null) {
+            throw IllegalStateException("Nenhum período financeiro selecionado para o usuário $userId")
+        }
 
         val category = if (Categories.fixedCategories.contains(transaction.category))
             transaction.category

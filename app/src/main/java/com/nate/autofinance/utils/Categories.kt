@@ -1,6 +1,6 @@
 package com.nate.autofinance.utils
 
-object Categories {
+object  Categories {
 
     const val INCOME = "+ Ganhos"
     const val FOOD = "Comida"
