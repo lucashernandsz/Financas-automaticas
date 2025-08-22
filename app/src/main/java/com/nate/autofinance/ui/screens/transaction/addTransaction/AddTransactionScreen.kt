@@ -1,5 +1,6 @@
 package com.nate.autofinance.ui.screens.transactionList
 
+import CategoryFilterRow
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,8 +19,8 @@ import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.components.AppTextField
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
 import com.nate.autofinance.utils.Categories
-import com.nate.autofinance.ui.screens.transactionList.addTransaction.AddTransactionState
-import com.nate.autofinance.ui.screens.transactionList.addTransaction.AddTransactionViewModel
+import com.nate.autofinance.ui.screens.transaction.addTransaction.AddTransactionState
+import com.nate.autofinance.ui.screens.transaction.addTransaction.AddTransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -27,7 +28,7 @@ import java.util.*
 @Composable
 fun AddTransactionScreen(
     viewModel: AddTransactionViewModel = viewModel(),            // injeta o VM
-    initialCategory: String = Categories.INCOME, // categoria inicial
+    initialCategory: String = Categories.Income.name, // categoria inicial
     onBack: () -> Unit = {},
     onSaveSuccess: () -> Unit = {}                               // callback após salvar
 ) {
@@ -72,41 +73,30 @@ fun AddTransactionScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text("Categoria", style = MaterialTheme.typography.labelLarge)
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Categories.fixedCategories.forEach { cat ->
-                    val isSelected = selectedCategory == cat
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { selectedCategory = cat },
-                        label = { Text(cat) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                            labelColor     = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                }
-            }
-
+            CategoryFilterRow(
+                categories         = Categories.fixedCategories.map { it.name },
+                selectedCategory   = selectedCategory,
+                onCategorySelected = { selectedCategory = it }
+            )
+            Spacer(Modifier.height(8.dp))
+            Text("Valor", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value = amount,
                 onValueChange = { amount = it },
-                placeholder    = "Valor",
+                placeholder = "Ex: 50.0",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
+            Text("Data", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value = dateText,
                 onValueChange = { dateText = it },
-                placeholder    = "Data (dd/MM/yyyy)"
+                placeholder    = "(dd/MM/yyyy)"
             )
+            Text("Descrição", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value      = description,
                 onValueChange = { description = it },
-                placeholder    = "Descrição",
+                placeholder    = "Ex: Compra no mercado",
                 singleLine     = false
             )
 

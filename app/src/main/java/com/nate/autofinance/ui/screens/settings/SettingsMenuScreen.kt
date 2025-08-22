@@ -1,6 +1,7 @@
 package com.nate.autofinance.ui.screens.settings
 
 import android.Manifest
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -11,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
@@ -41,7 +41,7 @@ fun SettingsMenuScreen(
     onNavigateToNewFinancialPeriod: () -> Unit = {},
     onNavigateToFinancialPeriods: () -> Unit = {}
 ) {
-    val app = LocalContext.current.applicationContext as android.app.Application
+    val app = LocalContext.current.applicationContext as Application
     val viewModel: SubscriptionViewModel = viewModel(
         modelClass = SubscriptionViewModel::class.java,
         factory = AndroidViewModelFactory.getInstance(app)

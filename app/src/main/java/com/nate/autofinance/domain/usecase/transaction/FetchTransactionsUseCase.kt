@@ -1,4 +1,4 @@
-package com.nate.autofinance.domain.usecases.transaction
+package com.nate.autofinance.domain.usecase.transaction
 
 import android.content.Context
 import com.nate.autofinance.data.repository.TransactionRepository

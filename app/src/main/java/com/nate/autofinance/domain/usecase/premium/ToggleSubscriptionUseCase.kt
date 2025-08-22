@@ -1,4 +1,4 @@
-package com.nate.autofinance.domain.usecases.subscription
+package com.nate.autofinance.domain.usecase.subscription
 
 import com.nate.autofinance.data.repository.UserRepository
 import com.nate.autofinance.utils.SessionManager

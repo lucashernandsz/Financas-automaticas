@@ -1,4 +1,4 @@
-package com.nate.autofinance.ui.screens.transactionList
+package com.nate.autofinance.ui.screens.transaction
 
 import CategoryFilterRow
 import android.os.Build
@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.R
 import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
@@ -27,7 +29,7 @@ fun Double.toBrazilianCurrency(): String =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
-    viewModel: TransactionViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: TransactionViewModel = viewModel(),
     onDashboardClick: () -> Unit = {},
     onTransactionsClick: () -> Unit = {},
     onAddTransactionClick: (String?) -> Unit = {},
@@ -71,9 +73,13 @@ fun TransactionListScreen(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
-                    // Você pode adicionar um texto como "Nenhuma transação encontrada." aqui
+                    Text(
+                        text = "Não há nenhuma transação inserida",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             } else {
                 // 7) Lista de transações, que se atualiza automaticamente
@@ -96,7 +102,7 @@ fun TransactionListScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "Total: ${total.toBrazilianCurrency()}",

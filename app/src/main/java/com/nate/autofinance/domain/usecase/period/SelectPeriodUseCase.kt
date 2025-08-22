@@ -1,6 +1,6 @@
 // app/src/main/java/com/nate/autofinance/domain/usecases/period/SelectPeriodUseCase.kt
 
-package com.nate.autofinance.domain.usecases.period
+package com.nate.autofinance.domain.usecase.period
 
 import android.content.Context
 import com.nate.autofinance.data.repository.PeriodRepository

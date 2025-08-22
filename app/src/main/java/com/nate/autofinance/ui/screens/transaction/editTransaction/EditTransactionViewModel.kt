@@ -1,5 +1,5 @@
 // app/src/main/java/com/nate/autofinance/viewmodel/EditTransactionViewModel.kt
-package com.nate.autofinance.ui.screens.transactionList.editTransaction
+package com.nate.autofinance.ui.screens.transaction.editTransaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-package com.nate.autofinance.ui.screens.transactionList.editTransaction
+package com.nate.autofinance.ui.screens.transaction.editTransaction
 
 import CategoryFilterRow
 import androidx.compose.foundation.layout.*
@@ -63,28 +63,31 @@ fun EditTransactionScreen(
         ) {
             Text("Categoria", style = MaterialTheme.typography.labelLarge)
                 CategoryFilterRow(
-                categories         = Categories.fixedCategories,
+                categories         = Categories.fixedCategories.map { it.name },
                 selectedCategory   = selectedCategory,
                 onCategorySelected = { selectedCategory = it }
             )
-
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Valor", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value = amount,
                 onValueChange = { amount = it },
-                placeholder    = "Valor",
+                placeholder    = "Ex: 1500.00",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
+            Text("Data", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value = dateText,
                 onValueChange = { dateText = it },
-                placeholder    = "Data (dd/MM/yyyy)"
+                placeholder    = "(dd/MM/yyyy)"
             )
 
+            Text("Descrição", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value      = description,
                 onValueChange = { description = it },
-                placeholder    = "Descrição",
+                placeholder    = "Compras do mês",
                 singleLine     = false
             )
 

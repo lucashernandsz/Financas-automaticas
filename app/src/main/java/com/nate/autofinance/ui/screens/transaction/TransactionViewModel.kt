@@ -1,4 +1,5 @@
-package com.nate.autofinance.ui.screens.transactionList
+// app/src/main/java/com/nate/autofinance/viewmodel/TransactionViewModel.kt
+package com.nate.autofinance.viewmodel
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -52,7 +53,8 @@ class TransactionViewModel : ViewModel() {
     val transactions: StateFlow<List<Transaction>> =
         transactionsFlow.stateIn(viewModelScope, SharingStarted.Companion.WhileSubscribed(5_000), emptyList())
 
-    private val _categories = MutableStateFlow(listOf("Todas") + Categories.fixedCategories)
+    private val _categories =
+        MutableStateFlow(listOf("Todas") + Categories.fixedCategories.map { it.name })
     val categories: StateFlow<List<String>> = _categories.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("Todas")
@@ -63,7 +65,7 @@ class TransactionViewModel : ViewModel() {
             println("TransactionViewModel: ✅ Filtrando ${txs.size} transações para '$cat'")
             val filtered = when {
                 cat == "Todas" -> txs
-                cat == Categories.INCOME -> txs.filter { it.category == Categories.INCOME }
+                cat == Categories.Income.name -> txs.filter { it.category == Categories.Income.name }
                 else -> txs.filter { it.category == cat }
             }
             println("TransactionViewModel: ✅ ${filtered.size} após filtragem")
@@ -80,6 +82,12 @@ class TransactionViewModel : ViewModel() {
         if (_categories.value.contains(category)) {
             _selectedCategory.value = category
         }
+    }
+
+    fun getCategoryIcon(category: String): Int {
+        return Categories.fixedCategories.find { it.name == category }?.iconResId
+            ?: Categories.fixedCategories.firstOrNull { it.name == "Outros" }?.iconResId
+            ?: Categories.Income.iconResId
     }
 
     fun clearError() { _errorMessage.value = null }

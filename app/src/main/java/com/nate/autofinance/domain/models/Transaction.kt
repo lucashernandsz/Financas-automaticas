@@ -18,7 +18,7 @@ import java.util.Date
     ],
     indices = [Index(value = ["financialPeriodId"])]
 )
-data class Transaction(
+data class  Transaction(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val date: Date,
     val amount: Double,

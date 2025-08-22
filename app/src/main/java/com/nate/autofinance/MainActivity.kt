@@ -18,21 +18,23 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.google.firebase.auth.FirebaseAuth
+import com.nate.autofinance.ui.screens.transaction.editTransaction.EditTransactionViewModel
+import com.nate.autofinance.ui.screens.register.RegisterViewModel
+import com.nate.autofinance.ui.screens.transaction.TransactionViewModel
 import com.nate.autofinance.ui.screens.login.LoginScreen
 import com.nate.autofinance.ui.screens.register.RegisterScreen
 import com.nate.autofinance.ui.screens.register.RegisterViewModel
 import com.nate.autofinance.ui.screens.transactionList.AddTransactionScreen
-import com.nate.autofinance.ui.screens.transactionList.TransactionListScreen
+import com.nate.autofinance.ui.screens.transaction.TransactionListScreen
 import com.nate.autofinance.ui.screens.settings.NotificationImportSettingsScreen
 import com.nate.autofinance.ui.screens.settings.SettingsMenuScreen
 import com.nate.autofinance.ui.screens.settings.financialPeriods.FinancialPeriodsScreen
 import com.nate.autofinance.ui.theme.AutofinanceTheme
 import com.nate.autofinance.utils.SessionManager
+import com.nate.autofinance.viewmodel.*
 import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.NewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
-import com.nate.autofinance.ui.screens.transactionList.TransactionViewModel
 import com.nate.autofinance.ui.screens.transactionList.editTransaction.EditTransactionScreen
-import com.nate.autofinance.ui.screens.transactionList.editTransaction.EditTransactionViewModel
 import com.nate.autofinance.utils.Categories
 
 class MainActivity : ComponentActivity() {
@@ -173,11 +175,11 @@ fun AutoFinanceApp(
                 "addTransaction/{initialCategory}",
                 arguments = listOf(navArgument("initialCategory") {
                     type = NavType.StringType
-                    defaultValue = Categories.INCOME
+                    defaultValue = Categories.Income.name
                 })
             ) { backStack ->
                 val initialCategory = backStack.arguments?.getString("initialCategory")
-                    ?: Categories.INCOME
+                    ?: Categories.Income.name
                 AddTransactionScreen(
                     initialCategory = initialCategory,
                     onBack = { navController.popBackStack() },

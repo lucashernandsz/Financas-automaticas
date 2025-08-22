@@ -120,7 +120,7 @@ class BankNotificationListener : NotificationListenerService() {
                     date = Date(),
                     amount = amount,
                     description = text,
-                    category = Categories.OTHER,
+                    category = Categories.Others.name,
                     userId = userId,
                     financialPeriodId = period!!.id,
                     imported = true

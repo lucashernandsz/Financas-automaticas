@@ -8,7 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.repository.SettingsRepository
-import com.nate.autofinance.domain.usecases.subscription.ToggleSubscriptionUseCase
+import com.nate.autofinance.domain.usecase.subscription.ToggleSubscriptionUseCase
 import com.nate.autofinance.utils.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
