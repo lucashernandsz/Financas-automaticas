@@ -4,7 +4,7 @@ package com.nate.autofinance.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nate.autofinance.ServiceLocator
-import com.nate.autofinance.data.models.Transaction
+import com.nate.autofinance.domain.models.Transaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

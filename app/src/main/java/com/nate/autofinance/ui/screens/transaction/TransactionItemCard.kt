@@ -1,4 +1,4 @@
-package com.nate.autofinance.ui.screens.transactionList
+package com.nate.autofinance.ui.screens.transaction
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column

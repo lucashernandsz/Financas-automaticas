@@ -1,4 +1,4 @@
-package com.nate.autofinance.ui.screens.transactionList
+package com.nate.autofinance.ui.screens.transaction.addTransaction
 
 import CategoryFilterRow
 import androidx.compose.foundation.horizontalScroll
@@ -19,8 +19,8 @@ import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.components.AppTextField
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
 import com.nate.autofinance.utils.Categories
-import com.nate.autofinance.ui.screens.transaction.addTransaction.AddTransactionState
-import com.nate.autofinance.ui.screens.transaction.addTransaction.AddTransactionViewModel
+import com.nate.autofinance.viewmodel.AddTransactionState
+import com.nate.autofinance.viewmodel.AddTransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -39,6 +39,7 @@ fun AddTransactionScreen(
     var dateText by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf(initialCategory) }
     var description by remember { mutableStateOf("") }
+    var isCredit by remember { mutableStateOf(false) }
 
     // preenche a data atual
     LaunchedEffect(Unit) {
@@ -86,6 +87,18 @@ fun AddTransactionScreen(
                 placeholder = "Ex: 50.0",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
+            Text("É crédito?", style = MaterialTheme.typography.labelLarge)
+            //Se checado, é crédito, marque o atributo crédito como true
+            Checkbox(
+                checked = isCredit,
+                onCheckedChange = {
+                    isCredit = !isCredit
+                },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+            )
             Text("Data", style = MaterialTheme.typography.labelLarge)
             AppTextField(
                 value = dateText,
@@ -128,6 +141,7 @@ fun AddTransactionScreen(
                             amount            = amountValue,
                             description       = description,
                             category          = selectedCategory,
+                            isCredit          = isCredit,
                             financialPeriodId = 0 // o use case vai buscar o período ativo
                         )
                     )

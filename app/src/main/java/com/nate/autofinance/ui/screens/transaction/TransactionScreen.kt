@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nate.autofinance.R
 import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.ui.components.AppTopBarPageTitle
+import com.nate.autofinance.viewmodel.TransactionViewModel
 
 // Formata valor em estilo brasileiro, ex: "1.500,00"
 fun Double.toBrazilianCurrency(): String =

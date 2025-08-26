@@ -20,11 +20,9 @@ import androidx.navigation.navArgument
 import com.google.firebase.auth.FirebaseAuth
 import com.nate.autofinance.ui.screens.transaction.editTransaction.EditTransactionViewModel
 import com.nate.autofinance.ui.screens.register.RegisterViewModel
-import com.nate.autofinance.ui.screens.transaction.TransactionViewModel
 import com.nate.autofinance.ui.screens.login.LoginScreen
 import com.nate.autofinance.ui.screens.register.RegisterScreen
-import com.nate.autofinance.ui.screens.register.RegisterViewModel
-import com.nate.autofinance.ui.screens.transactionList.AddTransactionScreen
+import com.nate.autofinance.ui.screens.transaction.addTransaction.AddTransactionScreen
 import com.nate.autofinance.ui.screens.transaction.TransactionListScreen
 import com.nate.autofinance.ui.screens.settings.NotificationImportSettingsScreen
 import com.nate.autofinance.ui.screens.settings.SettingsMenuScreen
@@ -34,7 +32,7 @@ import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.viewmodel.*
 import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.NewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
-import com.nate.autofinance.ui.screens.transactionList.editTransaction.EditTransactionScreen
+import com.nate.autofinance.ui.screens.transaction.editTransaction.EditTransactionScreen
 import com.nate.autofinance.utils.Categories
 
 class MainActivity : ComponentActivity() {
