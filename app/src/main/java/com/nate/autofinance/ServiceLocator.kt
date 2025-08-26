@@ -103,13 +103,14 @@ object ServiceLocator {
     val addTransactionUseCase by lazy {
         AddTransactionUseCase(
             transactionRepository,
-            sessionManager,
-            context,
             getCurrentActivePeriod = GetCurrentActivePeriodUseCase(
                 periodRepository,
                 sessionManager,
                 context
-            )
+            ),
+            context = context,
+            periodRepo = periodRepository,
+            session = sessionManager,
         )
     }
     val editTransactionUseCase by lazy {

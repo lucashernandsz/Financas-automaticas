@@ -54,12 +54,21 @@ class PeriodRepository(
         periodDao.getPeriodsByUserId(userId)
     }
 
-    suspend fun getNextPeriodForUser(userId: Int): FinancialPeriod? = withContext(ioDispatcher) {
+    suspend fun getNextPeriodForUser(userId: Int?): FinancialPeriod? = withContext(ioDispatcher) {
         val periods = periodDao.getPeriodsByUserId(userId)
         val today = Date()
         periods
             .filter { it.startDate != null && it.startDate.after(today) }
             .minByOrNull { it.startDate!!.time - today.time }
+    }
+
+    suspend fun getPeriodsForInstallments(userId: Int?, numberOfInstallments: Int): List<FinancialPeriod> = withContext(ioDispatcher) {
+        val periods = periodDao.getPeriodsByUserId(userId)
+        val today = Date()
+        periods
+            .filter { it.startDate != null && !it.startDate.before(today) }
+            .sortedBy { it.startDate }
+            .take(numberOfInstallments)
     }
 
 }
