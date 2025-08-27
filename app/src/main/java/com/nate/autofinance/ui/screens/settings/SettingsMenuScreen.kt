@@ -176,7 +176,21 @@ private fun simulateTestNotification(context: Context) {
         NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)           // ícone obrigatório
             .setContentTitle("Teste de notificação")
-            .setContentText("Você gastou R$ 100 no supermercado Nova Rita")
+            .setContentText("Você acaba de comprar R$ 100 no IFD*")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+        NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)           // ícone obrigatório
+            .setContentTitle("Teste de notificação")
+            .setContentText("Você acaba de comprar R$ 100 no IFD*")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+        NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)           // ícone obrigatório
+            .setContentTitle("Teste de notificação")
+            .setContentText("Você acaba de comprar R$ 100 no IFD*")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()

@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.nate.autofinance.ServiceLocator
+import com.nate.autofinance.data.categorization.Categorizer
+import com.nate.autofinance.data.categorization.PaymentTypeDetector
 import com.nate.autofinance.data.repository.SettingsRepository
 import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.utils.Categories
@@ -76,7 +78,9 @@ class BankNotificationListener : NotificationListenerService() {
 
         // Filtra por pacotes de bancos conhecidos
         if (pkg.contains("nubank", true) || pkg.contains("itau", true) || pkg.contains("inter", true) || pkg.contains("autofinance", true)) {
-            processBankNotification(text)
+            if(text.contains("você acaba de comprar", true)){
+                processBankNotification(text)
+            }
         }
     }
 
@@ -97,32 +101,25 @@ class BankNotificationListener : NotificationListenerService() {
                     .toDoubleOrNull()
                     ?: return@launch
 
-                // 2) Define sinal (positivo = crédito, negativo = débito)
-                val amount = if (text.contains("crédito", true)
-                    || text.contains("recebido", true)
-                ) value else -value
+                val amount = -value
 
                 // 3) Pega o usuário logado
                 val userId = SessionManager
                     .getUserId(applicationContext)
                     ?: return@launch
 
-                // 4) Encontra (ou cria) o período ativo desse usuário
-                val periodRepo = ServiceLocator.periodRepository
-                var period = periodRepo.getSelectedPeriodForUser(userId)
-                if (period == null) {
-                    ServiceLocator.createDefaultPeriodUseCase.invoke()
-                    period = periodRepo.getSelectedPeriodForUser(userId)
-                }
+                val category = Categorizer.categorize(text)
+                val isCredit = PaymentTypeDetector.isCredit(text)
 
                 // 5) Cria e salva a transação na categoria “Other”
                 val tx = Transaction(
                     date = Date(),
                     amount = amount,
                     description = text,
-                    category = Categories.Others.name,
+                    category = category,
                     userId = userId,
-                    financialPeriodId = period!!.id,
+                    isCredit = isCredit,
+                    financialPeriodId = 0, // Será ajustado depois
                     imported = true
                 )
                 ServiceLocator.addTransactionUseCase.invoke(tx)

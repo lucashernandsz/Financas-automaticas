@@ -207,7 +207,7 @@ fun AutoFinanceApp(
 
             composable("FinancialPeriods") {
                 FinancialPeriodsScreen(onBack = { navController.popBackStack() })
-            }
+            }   
         }
     }
 }
