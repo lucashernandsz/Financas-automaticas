@@ -30,7 +30,6 @@ import com.nate.autofinance.ui.screens.settings.financialPeriods.FinancialPeriod
 import com.nate.autofinance.ui.theme.AutofinanceTheme
 import com.nate.autofinance.utils.SessionManager
 import com.nate.autofinance.viewmodel.*
-import com.nate.autofinance.ui.screens.settings.newFinancialPeriod.NewPeriodScreen
 import com.nate.autofinance.ui.screens.settings.subscription.SubscriptionScreen
 import com.nate.autofinance.ui.screens.transaction.editTransaction.EditTransactionScreen
 import com.nate.autofinance.utils.Categories
@@ -204,10 +203,6 @@ fun AutoFinanceApp(
 
             composable("Subscription") {
                 SubscriptionScreen(onBack = { navController.popBackStack() })
-            }
-
-            composable("NewFinancialPeriod") {
-                NewPeriodScreen(onBack = { navController.popBackStack() }, onStartPeriod = { /* ... */ })
             }
 
             composable("FinancialPeriods") {

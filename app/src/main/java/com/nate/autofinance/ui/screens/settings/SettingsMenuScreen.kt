@@ -94,18 +94,6 @@ fun SettingsMenuScreen(
             }
 
             Spacer(Modifier.height(8.dp))
-
-            Button(
-                onClick = onNavigateToNewFinancialPeriod,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text("Iniciar novo período financeiro", color = Color.White)
-            }
-
-            Spacer(Modifier.height(8.dp))
-
             OutlinedButton(
                 onClick = onNavigateToFinancialPeriods,
                 modifier = Modifier.fillMaxWidth(),
