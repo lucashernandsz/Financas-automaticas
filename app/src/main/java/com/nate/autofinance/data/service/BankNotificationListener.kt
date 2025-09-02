@@ -12,6 +12,8 @@ import com.nate.autofinance.ServiceLocator
 import com.nate.autofinance.data.categorization.Categorizer
 import com.nate.autofinance.data.categorization.PaymentTypeDetector
 import com.nate.autofinance.data.repository.SettingsRepository
+import com.nate.autofinance.data.service.BankNotificationDetector.isBankNotification
+import com.nate.autofinance.data.service.PurchaseDetector.isPurchaseNotification
 import com.nate.autofinance.domain.models.Transaction
 import com.nate.autofinance.utils.Categories
 import com.nate.autofinance.utils.SessionManager
@@ -77,8 +79,8 @@ class BankNotificationListener : NotificationListenerService() {
         Log.d("BankNotifListener", "Recebeu notificação: pacote=$pkg, texto=$text")
 
         // Filtra por pacotes de bancos conhecidos
-        if (pkg.contains("nubank", true) || pkg.contains("itau", true) || pkg.contains("inter", true) || pkg.contains("autofinance", true)) {
-            if(text.contains("você acaba de comprar", true)){
+        if (isBankNotification(pkg)) {
+            if(isPurchaseNotification(text)) {
                 processBankNotification(text)
             }
         }
